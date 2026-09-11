@@ -1,26 +1,26 @@
 const path = require("path");
-const BundleAnalyzerPlugin =
-  require("webpack-bundle-analyzer").BundleAnalyzerPlugin;
-
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+
+const isProd = process.env.NODE_ENV === "production";
+
 module.exports = {
-  mode: "development",
+  mode: isProd ? "production" : "development",
   entry: {
     bundle: path.resolve(__dirname, "src/index.js")
   },
   output: {
     path: path.resolve(__dirname, "dist"),
-    filename: "[name][contenthash].js",
+    filename: isProd ? "[name].[contenthash].js" : "[name].js",
     clean: true,
-    assetModuleFilename: "[name][ext]"
+    assetModuleFilename: "assets/[name][ext]"
   },
-  devtool: "source-map",
+  devtool: isProd ? false : "source-map",
   devServer: {
     static: {
       directory: path.resolve(__dirname, "dist")
     },
     port: 3000,
-    open: true,
+    open: false,
     hot: true,
     compress: true,
     historyApiFallback: true
@@ -46,7 +46,11 @@ module.exports = {
         }
       },
       {
-        test: /\.(png|svg|jpg|jpeg|gif)$/i,
+        test: /\.(png|svg|jpg|jpeg|gif|ico)$/i,
+        type: "asset/resource"
+      },
+      {
+        test: /\.(woff|woff2|eot|ttf|otf)$/i,
         type: "asset/resource"
       }
     ]
@@ -55,7 +59,6 @@ module.exports = {
     new HtmlWebpackPlugin({
       filename: "index.html",
       template: "src/template.html"
-    }),
-    new BundleAnalyzerPlugin()
+    })
   ]
 };

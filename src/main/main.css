@@ -5,15 +5,64 @@
 @import "./archive/archive.css";
 @import "./trash/trash.css";
 
+/* ────────────────────────────────────────────
+   Main content area
+──────────────────────────────────────────── */
+
 main {
   width: 100%;
-  height: 100%;
+  min-height: calc(100vh - 64px);
   padding-top: 64px;
   padding-left: 80px;
-  transition: padding 0.1s ease;
+  transition: padding-left var(--transition-slow);
 }
 
 main.minimize {
   padding-left: 280px;
-  transition: padding 0.1s ease;
+}
+
+/* ────────────────────────────────────────────
+   Empty state (for sections not yet built)
+──────────────────────────────────────────── */
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 40vh;
+  gap: 16px;
+  opacity: 0;
+  animation: fadeIn 0.4s ease forwards 0.1s;
+}
+
+.empty-state svg {
+  width: 120px;
+  height: 120px;
+  opacity: 0.15;
+}
+
+.empty-state svg path {
+  fill: var(--text-primary);
+}
+
+.empty-state p {
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--text-muted);
+  margin: 0;
+  text-align: center;
+}
+
+.empty-state small {
+  font-size: 14px;
+  color: var(--text-muted);
+  opacity: 0.7;
+  text-align: center;
+  max-width: 280px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }

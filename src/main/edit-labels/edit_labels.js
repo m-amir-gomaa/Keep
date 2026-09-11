@@ -6,14 +6,14 @@ import {
   sideFeaturesElObj,
   updateArrayInLocalStorage,
   refresh,
-  initializemodalState,
-  getmodalStateFromLocalStorage,
+  initializeModalState,
+  getModalStateFromLocalStorage,
   updatemodalStateInLocalStorage
 } from "../..";
 import { toggleIcon, createSVGIcon_Container } from "../main";
 import { logoTxt } from "../../header/header";
 let labels = getArrayFromLocalStorage();
-let modalState = getmodalStateFromLocalStorage();
+let modalState = getModalStateFromLocalStorage();
 export function loadEditLabels(bool) {
   if (bool) {
     let DoneBtn;

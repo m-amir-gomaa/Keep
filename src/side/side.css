@@ -1,112 +1,196 @@
+/* ────────────────────────────────────────────
+   Sidebar shell
+──────────────────────────────────────────── */
+
 .side {
   position: fixed;
   top: 64px;
   left: 0;
   padding-top: 8px;
+  padding-bottom: 16px;
   width: 80px;
   background-color: var(--body-bg);
-  z-index: 1;
-  overflow: scroll;
+  z-index: 10;
+  overflow-y: auto;
+  overflow-x: hidden;
   height: calc(100vh - 64px);
-  font-family: "Google Sans";
+  font-family: "Google Sans", "Roboto", Arial, sans-serif;
+  transition: width var(--transition-slow);
+  will-change: width;
 }
+
+/* ────────────────────────────────────────────
+   Feature rows
+──────────────────────────────────────────── */
 
 .side__feature {
   display: flex;
   align-items: center;
   flex-direction: row;
-  height: 46px;
-
-  border-radius: 0 25px 25px 0;
+  height: 48px;
+  border-radius: 0 24px 24px 0;
+  margin-right: 16px;
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+  position: relative;
+  overflow: hidden;
 }
 
 .side__feature:hover {
-  cursor: pointer;
+  background-color: var(--hover-overlay);
 }
+
+.side__feature:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: -2px;
+  border-radius: 0 24px 24px 0;
+}
+
+/* ────────────────────────────────────────────
+   Active state
+──────────────────────────────────────────── */
 
 .side__feature.active .side__feature--Icon {
   background-color: var(--active-feature);
 }
+
 .side__feature.active svg path {
-  fill: white;
+  fill: var(--accent);
 }
 
+.side.open .side__feature.active {
+  background-color: var(--active-feature);
+}
+
+.side.open .side__feature.active .side__feature--Icon,
+.side.open .side__feature.active:hover {
+  background-color: transparent;
+}
+
+.side.open .side__feature:not(.active):hover {
+  background-color: var(--hover-overlay);
+}
+
+/* ────────────────────────────────────────────
+   Icon column
+──────────────────────────────────────────── */
+
 .side__feature > div:first-child {
-  flex: 80px;
-  padding-left: 12px;
-  width: 46px;
-  height: 46px;
+  flex: 0 0 80px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding-left: 16px;
 }
 
 .side__feature--Icon {
-  width: 46px;
-  height: 46px;
+  width: 48px;
+  height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
+  flex-shrink: 0;
+  transition: background-color var(--transition-fast);
 }
 
+.side__feature--Icon:hover {
+  background-color: var(--hover-overlay);
+}
+
+/* ────────────────────────────────────────────
+   Label column (collapsed → 0 width)
+──────────────────────────────────────────── */
+
 .side__feature > div:nth-child(2) {
-  flex: 0px;
+  flex: 0;
   overflow: hidden;
+  width: 0;
+  transition: width var(--transition-slow), flex var(--transition-slow);
 }
 
 .side__feature--txt {
   color: transparent;
   letter-spacing: 0.01785714em;
-  font-family: Roboto, Arial, sans-serif;
+  font-family: "Google Sans", Roboto, Arial, sans-serif;
   font-size: 0.875rem;
   font-weight: 500;
   line-height: 1.25rem;
-  width: 0;
-  transition: width 0.001s ease;
-  display: inline-block;
+  white-space: nowrap;
+  transition: color var(--transition-slow);
 }
 
-.side__feature--Icon:hover {
-  background-color: var(--header-svg-hover);
-}
+/* ────────────────────────────────────────────
+   Open state
+──────────────────────────────────────────── */
 
 .side.open {
   width: 280px;
-  transition: width 0.01s ease;
 }
 
 .side.open .side__feature > div:nth-child(2) {
-  flex: 200px;
-  width: 200px;
-  transition: width 0.01s ease;
+  flex: 1;
+  width: auto;
 }
 
 .side.open .side__feature--txt {
-  width: 100%;
+  color: var(--text-primary);
 }
 
-.side.open .side__feature--txt {
-  color: #e8eaed;
-}
-.side.open .side__feature.active .side__feature--Icon,
+/* When sidebar is open, the individual icon pill background is suppressed
+   (the whole row turns amber instead) */
 .side.open .side__feature--Icon:hover {
   background-color: transparent;
 }
 
-.side.open .side__feature.active,
-.side.open .side__feature.active:hover {
-  background-color: var(--active-feature);
-}
-
-.side.open .side__feature:focus {
-  border: 1px solid rgba(255, 255, 255, 0.6);
-}
-.side.open .side__feature:hover {
-  background-color: var(--header-svg-hover);
-}
+/* ────────────────────────────────────────────
+   Tooltip suppression when sidebar is open
+──────────────────────────────────────────── */
 
 .side [data-tool-tip]::before {
   z-index: 1;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%) translateX(6px);
 }
-.side [data-tool-tip]:hover::before {
-  visibility: none;
+
+.side.open [data-tool-tip]::before {
+  visibility: hidden !important;
+  opacity: 0 !important;
+}
+
+/* ────────────────────────────────────────────
+   Section divider label (e.g. "Labels")
+──────────────────────────────────────────── */
+
+.side__section-header {
+  padding: 12px 16px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
   opacity: 0;
+  height: 0;
+  transition: opacity var(--transition-slow), height var(--transition-slow);
+}
+
+.side.open .side__section-header {
+  opacity: 1;
+  height: auto;
+}
+
+/* ────────────────────────────────────────────
+   Scrollbar
+──────────────────────────────────────────── */
+
+.side::-webkit-scrollbar {
+  width: 4px;
+}
+
+.side::-webkit-scrollbar-thumb {
+  background: var(--grey);
+  border-radius: var(--radius-pill);
 }

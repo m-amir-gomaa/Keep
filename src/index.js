@@ -1,240 +1,280 @@
+/**
+ * index.js — App entry point
+ * ─────────────────────────────────────────────────────────────────────────
+ * Bootstraps the Google Keep clone:
+ *  1. Initializes localStorage defaults
+ *  2. Mounts Header, Sidebar, and Main content
+ *  3. Wires sidebar navigation + responsive behaviour
+ *
+ * Philosophy: no frameworks, no magic — just clean, composable vanilla JS
+ * that shows off DOM fluency, module design, and localStorage data-binding.
+ */
+
 import "./index.css";
 import { loadHeader, logoTxt } from "./header/header";
 import { loadMain } from "./main/main";
 import { removeClassOnSmallScreen, loadSide } from "./side/side";
 import { loadEditLabels } from "./main/edit-labels/edit_labels";
+
+/* ─────────────────────────────────────────────────
+   Bootstrap
+───────────────────────────────────────────────── */
+
 function loadApp() {
-  initializeArray();
-  initializemodalState();
-  loadEditLabels(getmodalStateFromLocalStorage());
+  initializeLabels();
+  initializeModalState();
+
+  // Restore Edit Labels modal if it was open on last reload
+  loadEditLabels(getModalStateFromLocalStorage());
+
   loadHeader();
   loadMain();
   loadSide();
 }
 
 loadApp();
-function show() {
-  document.addEventListener("DOMContentLoaded", () => {
-    document.querySelectorAll("*").forEach((el) => {
-      el.style.border = "1px solid red";
-    });
-  });
-}
 
+/* ─────────────────────────────────────────────────
+   DOM utilities (exported for use across modules)
+───────────────────────────────────────────────── */
+
+/**
+ * Parse an SVG string into a live SVGElement.
+ * @param {string} svgString
+ * @returns {SVGElement}
+ */
 export function createSVGIcon(svgString) {
   const parser = new DOMParser();
   const svgDocument = parser.parseFromString(svgString, "image/svg+xml");
   return svgDocument.documentElement;
 }
 
+/**
+ * Wrap an element in a container div (or other tag) and append it to a parent.
+ * @param {HTMLElement} El        – the element to wrap
+ * @param {HTMLElement} grandParent – where to append the wrapper
+ * @param {string}      classes   – space-separated class names for the wrapper
+ * @param {string}      type      – HTML tag for the wrapper (default: "div")
+ */
 export function provideContainer(El, grandParent, classes = "", type = "div") {
-  const Container = document.createElement(type);
-  Container.appendChild(El);
-  Container.classList = classes;
-  grandParent.appendChild(Container);
+  const container = document.createElement(type);
+  container.appendChild(El);
+  if (classes) container.className = classes;
+  grandParent.appendChild(container);
 }
 
+/** Remove inline styles from an element. */
 export function removeInlineStyling(El) {
   El.removeAttribute("style");
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  {
-    const mediaQuery = window.matchMedia("(max-width: 600px)");
+/* ─────────────────────────────────────────────────
+   Accessibility helpers
+───────────────────────────────────────────────── */
 
-    removeClassOnSmallScreen(mediaQuery);
+export function makeFocusable(el) {
+  el.setAttribute("role", "button");
+  el.setAttribute("tabindex", "0");
+}
 
-    mediaQuery.addEventListener("change", function (event) {
-      removeClassOnSmallScreen(event.target);
-    });
-  }
+export function makeUnfocusable(el) {
+  el.removeAttribute("role");
+  el.removeAttribute("tabindex");
+}
 
-  focusOut();
-});
+export function makeHoverable(el, txt) {
+  el.setAttribute("data-tool-tip", txt);
+}
 
+export function makeUnhoverable(el) {
+  el.removeAttribute("data-tool-tip");
+}
+
+/* ─────────────────────────────────────────────────
+   Sidebar feature map + navigation
+───────────────────────────────────────────────── */
+
+// Built after loadSide() renders elements into the DOM
 const sideFeaturesElObj = {};
 
-// this is very important
-// sideFeaturesObj contains properties and values equal to
-// sideFeature IDs and sideFeature Elements respectively
 const sideFeatures = document.querySelectorAll(".side__feature");
-sideFeatures.forEach((feature) => {
+sideFeatures.forEach(feature => {
   if (feature.id) {
     sideFeaturesElObj[feature.id] = document.querySelector(`#${feature.id}`);
   }
 });
-Object.values(sideFeaturesElObj)[0].classList.add("active");
 
-// // Object.keys(sideFeaturesElObj);
+// Mark the first feature (Notes) as active on load
+const featureEls = Object.values(sideFeaturesElObj);
+if (featureEls.length) featureEls[0].classList.add("active");
+
+// Build icon array for focus management
+export const Icons = [];
+featureEls.forEach(el => {
+  const icon = el.firstChild?.firstChild;
+  if (icon) Icons.push(icon);
+});
+
+/** Sidebar collapsed: only icons are focusable, not the full rows. */
+export function focusOut() {
+  featureEls.forEach(el => makeUnfocusable(el));
+  Icons.forEach(el => makeFocusable(el));
+}
+
+/** Sidebar expanded: full rows are focusable. */
+export function focusIn() {
+  featureEls.forEach(el => makeFocusable(el));
+  Icons.forEach(el => makeUnfocusable(el));
+}
+
+// Initialize focus state
 const logoContainer = document.querySelector(".logo-container");
-const logoImg = document.querySelector(".logo-container img");
-Object.values(sideFeaturesElObj).forEach((feature) => {
+const logoImg       = document.querySelector(".logo-container img");
+
+featureEls.forEach(feature => {
   feature.addEventListener("click", () => {
-    Object.values(sideFeaturesElObj).forEach((feat) => {
+    // Deactivate all
+    featureEls.forEach(feat => {
       feat.classList.remove("active");
-      if (feat.id === "Notes") {
-        makeHoverable(logoTxt, "Keep");
-        makeFocusable(logoTxt);
-      } else {
-        makeUnhoverable(logoTxt);
-        makeUnfocusable(logoTxt);
-      }
     });
+
+    // Activate clicked
     feature.classList.add("active");
-    loadMain(feature.id);
+
+    // Update logo text
+    const isNotes = feature.id === "Notes";
+    const isLabel = !["Notes", "Reminders", "Edit-labels", "Archive", "Trash"].includes(feature.id);
+
     logoContainer.removeChild(logoTxt);
-    if (feature.id !== "Notes" && feature.id !== "Edit-labels") {
-      if (logoContainer.contains(logoImg)) {
-        logoContainer.removeChild(logoImg);
-      }
-      logoTxt.textContent =
-        feature.id === "Edit-labels"
-          ? "Edit Labels"
-          : feature.id.split("-").join(" ");
-    } else if (feature.id === "Notes") {
-      if (!logoContainer.contains(logoImg)) {
-        logoContainer.appendChild(logoImg);
-      }
+
+    if (isNotes) {
+      if (!logoContainer.contains(logoImg)) logoContainer.appendChild(logoImg);
       logoTxt.textContent = "Keep";
+      makeHoverable(logoTxt, "Keep");
+      makeFocusable(logoTxt);
+    } else {
+      if (logoContainer.contains(logoImg)) logoContainer.removeChild(logoImg);
+      logoTxt.textContent = feature.id === "Edit-labels"
+        ? "Edit Labels"
+        : feature.id.split("-").join(" ");
+      makeUnhoverable(logoTxt);
+      makeUnfocusable(logoTxt);
     }
 
     logoContainer.appendChild(logoTxt);
+
+    // Load content
+    loadMain(feature.id);
   });
 });
 
-export function makeFocusable(div) {
-  div.setAttribute("role", "button");
-  div.setAttribute("tabindex", "0");
-}
+export { sideFeaturesElObj };
 
-export function makeHoverable(div, txt) {
-  div.setAttribute("data-tool-tip", txt);
-}
+/* ─────────────────────────────────────────────────
+   Editable div factory (title / body inputs)
+───────────────────────────────────────────────── */
 
-export function makeUnhoverable(div) {
-  if (div.dataset.toolTip) {
-    div.removeAttribute("data-tool-tip");
-  }
-}
-
-export function makeUnfocusable(div) {
-  div.removeAttribute("role");
-  div.removeAttribute("tabindex");
-}
-export {};
-let Icons = [];
-Object.values(sideFeaturesElObj).forEach((el) => {
-  Icons.push(el.firstChild.firstChild);
-});
-const body = document.querySelector("body");
-body.addEventListener("click", () => {});
-
-// document.addEventListener("keydown", function (event) {
-//   if (event.key === "Enter" || event.key === " ") {
-//     event.preventDefault(); // Prevent default behavior (e.g., submitting forms)
-//     // Simulate a click when Enter or Space is pressed
-//     document.activeElement.click();
-//   }
-// });
-export { Icons, sideFeaturesElObj };
-
-export function focusOut() {
-  Object.values(sideFeaturesElObj).forEach((el) => {
-    makeUnfocusable(el);
-  });
-  Icons.forEach((el) => {
-    makeFocusable(el);
-  });
-}
-
-export function focusIn() {
-  Object.values(sideFeaturesElObj).forEach((el) => {
-    makeFocusable(el);
-  });
-  Icons.forEach((el) => {
-    makeUnfocusable(el);
-  });
-}
+/**
+ * Creates a placeholder+contenteditable pair inside a wrapper div.
+ * @param {string}      txt        – Placeholder label
+ * @param {HTMLElement} parent     – Parent to inject into (not appended here)
+ * @param {boolean}     expandable – If true, Enter inserts a line-break
+ * @returns {HTMLElement} the wrapper div
+ */
 export function createEditableDiv(txt, parent, expandable = false) {
-  const parentElement = document.createElement("div");
-  const firstDiv = document.createElement("div");
-  firstDiv.classList.add("placeholder");
-  firstDiv.textContent = txt;
-  parentElement.appendChild(firstDiv);
-  // Create the second child div (contenteditable div)
-  const secondDiv = document.createElement("div");
-  secondDiv.classList.add("mainInput");
-  secondDiv.contentEditable = true;
-  secondDiv.setAttribute("aria-multiline", "true");
-  secondDiv.setAttribute("role", "textbox");
-  secondDiv.setAttribute("tabindex", "0");
-  secondDiv.setAttribute("spellcheck", "true");
-  secondDiv.setAttribute("aria-label", "Take a note…");
-  secondDiv.classList.add("mainInput");
-  parentElement.appendChild(secondDiv);
-  // Get the contenteditable div and its parent element
+  const wrapper = document.createElement("div");
 
-  // Add event listener for the 'keydown' event
-  secondDiv.addEventListener("keydown", function (event) {
-    // Check if the Enter key is pressed
-    if (event.key === "Enter") {
-      if (expandable) {
-        // Prevent the default behavior of the Enter key (inserting a newline)
+  // Placeholder text
+  const placeholder = document.createElement("div");
+  placeholder.classList.add("placeholder");
+  placeholder.textContent = txt;
+  wrapper.appendChild(placeholder);
+
+  // Contenteditable region
+  const editable = document.createElement("div");
+  editable.classList.add("mainInput");
+  editable.contentEditable = "true";
+  editable.setAttribute("aria-multiline", "true");
+  editable.setAttribute("role", "textbox");
+  editable.setAttribute("tabindex", "0");
+  editable.setAttribute("spellcheck", "true");
+  editable.setAttribute("aria-label", txt);
+  wrapper.appendChild(editable);
+
+  // Hide placeholder as soon as user types
+  editable.addEventListener("input", () => {
+    placeholder.style.display = editable.textContent.trim() ? "none" : "";
+  });
+
+  if (expandable) {
+    editable.addEventListener("keydown", event => {
+      if (event.key === "Enter") {
         event.preventDefault();
 
-        // Insert a newline character
         const selection = window.getSelection();
         const range = selection.getRangeAt(0);
-        const newline = document.createElement("br");
+        const br = document.createElement("br");
         range.deleteContents();
-        range.insertNode(newline);
+        range.insertNode(br);
 
-        // Move the cursor to the beginning of the inserted newline
-        range.setStartAfter(newline);
+        range.setStartAfter(br);
         range.collapse(true);
         selection.removeAllRanges();
         selection.addRange(range);
-
-        secondDiv.style.height = secondDiv.scrollHeight + "px";
-
-        parentElement.style.height = secondDiv.scrollHeight + "px";
-        parent.style.height = secondDiv.scrollHeight + "px";
       }
+    });
+  }
 
-      return false;
-    }
-  });
-  return parentElement;
+  return wrapper;
 }
 
-export function initializeArray() {
+/* ─────────────────────────────────────────────────
+   localStorage helpers
+───────────────────────────────────────────────── */
+
+/** Seed labels array if absent. */
+export function initializeLabels() {
   if (!localStorage.getItem("labels")) {
     localStorage.setItem("labels", JSON.stringify(["CSS3", "RANDOM THOUGHTS"]));
   }
 }
 
 export function getArrayFromLocalStorage() {
-  return JSON.parse(localStorage.getItem("labels"));
+  return JSON.parse(localStorage.getItem("labels")) || [];
 }
 
-export function updateArrayInLocalStorage(updatedArray) {
-  localStorage.setItem("labels", JSON.stringify(updatedArray));
+export function updateArrayInLocalStorage(arr) {
+  localStorage.setItem("labels", JSON.stringify(arr));
 }
 
+/** Seed modal-state flag if absent. */
+export function initializeModalState() {
+  if (!localStorage.getItem("modalState")) {
+    localStorage.setItem("modalState", JSON.stringify(false));
+  }
+}
+
+export function getModalStateFromLocalStorage() {
+  return JSON.parse(localStorage.getItem("modalState"));
+}
+
+export function updatemodalStateInLocalStorage(state) {
+  localStorage.setItem("modalState", JSON.stringify(state));
+}
+
+/** Hard-reload the page. */
 export function refresh() {
   location.reload();
 }
 
-export function initializemodalState() {
-  if (!localStorage.getItem("modalState")) {
-    localStorage.setItem("modalState", JSON.stringify(true));
-  }
-}
+/* ─────────────────────────────────────────────────
+   Responsive sidebar behaviour
+───────────────────────────────────────────────── */
 
-export function getmodalStateFromLocalStorage() {
-  return JSON.parse(localStorage.getItem("modalState"));
-}
+document.addEventListener("DOMContentLoaded", () => {
+  const mediaQuery = window.matchMedia("(max-width: 600px)");
+  removeClassOnSmallScreen(mediaQuery);
+  mediaQuery.addEventListener("change", event => removeClassOnSmallScreen(event.target));
 
-export function updatemodalStateInLocalStorage(updatedArray) {
-  localStorage.setItem("modalState", JSON.stringify(updatedArray));
-}
+  focusOut();
+});

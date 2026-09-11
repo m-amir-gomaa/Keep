@@ -16,8 +16,7 @@
 
 @font-face {
   font-family: "Product Sans";
-  src: url("https://fonts.gstatic.com/s/productsans/v19/pxiDypQkot1TnFhsFMOfGShVF9eO.woff2")
-    format("woff2");
+  src: url("./assets/pxiDypQkot1TnFhsFMOfGShVF9eO.woff2") format("woff2");
   font-style: normal;
   font-weight: 400;
   unicode-range: U+0-FF, U+131, U+152-153, U+2BB-2BC, U+2C6, U+2DA, U+2DC, U+304,
@@ -35,37 +34,90 @@
     U+308, U+329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212,
     U+2215, U+FEFF, U+FFFD;
 }
+
 * {
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   box-sizing: border-box;
 }
+
 html {
   scroll-behavior: smooth;
 }
-svg path {
-  fill: var(--light-grey);
-}
-svg {
-  width: 24px;
-  height: 24px;
-}
+
 :root {
+  /* Core palette */
+  --body-bg: #1a1b1e;
+  --surface: #202124;
+  --surface-raised: #2a2b2e;
+  --surface-overlay: #313235;
+
+  /* Text */
+  --text-primary: #e8e8e8;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
+
+  /* Brand amber/yellow — Google Keep warmth */
+  --accent: #fbbc04;
+  --accent-dim: rgba(251, 188, 4, 0.12);
+
+  /* Legacy aliases (kept for existing code) */
   --grey: rgb(82, 83, 85);
   --light-grey: #a1a1aa;
   --off-white: #e8e8e8;
-  --body-bg: #202124;
-  --active-feature: rgb(65, 51, 28);
-  --header-svg-hover: rgba(255, 255, 255, 0.075);
   --lighter-grey: #e8e8e8;
+
+  /* Interaction states */
+  --hover-overlay: rgba(255, 255, 255, 0.07);
+  --active-feature: rgba(251, 188, 4, 0.18);
+  --header-svg-hover: rgba(255, 255, 255, 0.075);
+
+  /* Borders */
+  --border: rgba(255, 255, 255, 0.12);
+  --border-focus: rgba(251, 188, 4, 0.6);
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.5), 0 2px 4px rgba(0,0,0,0.3);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.6), 0 4px 8px rgba(0,0,0,0.4);
+
+  /* Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+  --radius-pill: 9999px;
+
+  /* Transitions */
+  --transition-fast: 0.15s ease;
+  --transition-med: 0.25s ease;
+  --transition-slow: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
 body {
-  font-family: "Product Sans", sans-serif;
-  font-weight: bold;
-  color: var(--off-white);
+  font-family: "Google Sans", "Product Sans", sans-serif;
+  font-weight: 400;
+  color: var(--text-primary);
   background-color: var(--body-bg);
   position: relative;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
+
+svg path {
+  fill: var(--light-grey);
+  transition: fill var(--transition-fast);
+}
+
+svg {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+/* ────────────────────────────────────────────
+   Tooltip system
+──────────────────────────────────────────── */
 
 [data-tool-tip] {
   position: relative;
@@ -74,39 +126,102 @@ body {
 [data-tool-tip]::before {
   content: attr(data-tool-tip);
   position: absolute;
-  top: 100%;
+  top: calc(100% + 6px);
   left: 50%;
-  transform: translate(-50%, 3px);
-  font-size: 12px;
-  font-weight: 800;
-  z-index: 1;
-  background-color: rgba(82, 83, 85, 0.7);
-  color: var(--off-white);
-  padding: 4px 8px;
-  border-radius: 4px;
+  transform: translateX(-50%);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  z-index: 100;
+  background-color: rgba(50, 50, 55, 0.95);
+  backdrop-filter: blur(8px);
+  color: var(--text-primary);
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
   visibility: hidden;
   opacity: 0;
-  transition: opacity 0.3s ease, visibility 0.3s ease;
+  transition: opacity var(--transition-med), visibility var(--transition-med);
   white-space: nowrap;
+  pointer-events: none;
+  box-shadow: var(--shadow-sm);
 }
+
 [data-tool-tip]:focus::before,
 [data-tool-tip]:hover::before {
   visibility: visible;
   opacity: 1;
 }
 
+/* ────────────────────────────────────────────
+   Shared button style
+──────────────────────────────────────────── */
+
 .special__button {
-  width: 86px;
   height: 36px;
-  padding: 8px 24px;
+  padding: 8px 20px;
   background-color: transparent;
   border: none;
   font-size: 14px;
-  color: var(--lighter-grey);
-  border-radius: 4px;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--accent);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  letter-spacing: 0.01em;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
 }
 
 .special__button:hover {
-  background-color: var(--header-svg-hover);
-  cursor: pointer;
+  background-color: var(--accent-dim);
+}
+
+.special__button:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+/* ────────────────────────────────────────────
+   Scrollbar styling
+──────────────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--grey);
+  border-radius: var(--radius-pill);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--light-grey);
+}
+
+/* ────────────────────────────────────────────
+   Focus ring (accessibility)
+──────────────────────────────────────────── */
+
+:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+/* ────────────────────────────────────────────
+   Placeholder / input text colour fix
+──────────────────────────────────────────── */
+
+::placeholder {
+  color: var(--text-muted);
+  opacity: 1;
+}
+
+input {
+  color: var(--text-primary);
+  font-family: inherit;
 }

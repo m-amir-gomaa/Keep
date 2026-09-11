@@ -1,53 +1,64 @@
+/* ────────────────────────────────────────────
+   Header shell
+──────────────────────────────────────────── */
+
 header {
   height: 64px;
-  padding: 8px;
-  padding-right: 98px;
+  padding: 8px 16px 8px 8px;
   width: 100vw;
   position: fixed;
   top: 0;
   left: 0;
   display: flex;
   flex-direction: row;
-  z-index: 2;
-  border-bottom: 1px solid var(--grey);
+  align-items: center;
+  z-index: 20;
+  background-color: var(--body-bg);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(10px);
 }
+
+/* ────────────────────────────────────────────
+   Three-column layout
+──────────────────────────────────────────── */
 
 .left,
 .middle,
 .right {
   display: flex;
   flex-direction: row;
+  align-items: center;
 }
+
 .left,
 .right {
   height: 48px;
 }
-.left {
-  flex: 232px;
-  padding-right: 30px;
 
-  display: flex;
-  flex-direction: row;
+.left {
+  flex: 0 0 232px;
+  padding-right: 24px;
+  gap: 4px;
 }
 
 .right {
-  width: 202px;
+  flex: 0 0 144px;
 }
 
-.left svg {
-  width: 24px;
-  height: 24px;
+header .middle {
+  flex: 1;
+  padding: 0 16px;
+  justify-content: center;
 }
 
-.left > div.active > div {
-  background-color: var(--header-svg-hover);
-}
-.left svg path {
-  fill: var(--off-white);
-}
+/* ────────────────────────────────────────────
+   Menu icon button
+──────────────────────────────────────────── */
+
 .left > div:first-child {
-  flex: 48px;
+  flex: 0 0 48px;
 }
+
 .left > div:first-child div {
   display: flex;
   align-items: center;
@@ -55,231 +66,288 @@ header {
   height: 48px;
   width: 48px;
   border-radius: 50%;
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
 }
 
-.left div:nth-child(2) {
-  flex: 154px;
+.left > div:first-child:hover div,
+.left > div.active > div {
+  background-color: var(--hover-overlay);
+}
+
+.left svg path {
+  fill: var(--text-primary);
+}
+
+.left svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* ────────────────────────────────────────────
+   Logo
+──────────────────────────────────────────── */
+
+.left > div:nth-child(2) {
+  flex: 1;
 }
 
 .logo-container {
-  width: 100%;
-  height: 100%;
-  padding-left: 4px;
   display: flex;
   align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  transition: background-color var(--transition-fast);
+}
+
+.logo-container:hover {
+  background-color: var(--hover-overlay);
 }
 
 .logo-container img {
-  flex: 44px;
   height: 40px;
-  width: 44px;
-  margin-bottom: 4px;
-  padding-right: 4px;
-  margin-right: auto;
+  width: 40px;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 .logo-container span {
-  flex: calc(100% - 44px);
   font-size: 22px;
   font-weight: 400;
-  padding-left: 4px;
+  font-family: "Product Sans", sans-serif;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  white-space: nowrap;
   position: relative;
-  top: 1.5px;
-  font-family: "Product Sans";
-}
-
-header .middle {
-  flex: calc(100% - 376px);
-  padding-left: 10px;
-  padding-right: 30px;
-}
-
-.search-field {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-
-  width: 720px;
-  height: 48px;
-  border-radius: 8px;
-  background-color: var(--grey);
-}
-
-.search-field input {
-  flex: calc(100% - 92px);
-  height: 46px;
-  padding: 11px;
-  font-size: 18px;
-  background-color: transparent;
-  border: none;
-  outline: none;
-  color: var(--light-grey);
-  font-weight: lighter;
-}
-
-.search-field ::placeholder {
-  font-weight: lighter;
-}
-
-.search-field div:nth-child(1),
-.search-field div:nth-child(3) {
-  flex: 46px;
-  height: 48px;
-  padding: 0 5px;
-  display: flex;
-  align-items: center;
-}
-.search-field div:nth-child(3) button {
-  display: none;
-}
-.search-field button {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: transparent;
-  border: none;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.search-field.focused {
-  background-color: white;
-}
-.search-field.focused input {
-  color: var(--body-bg);
-}
-.search-field.focused > div:nth-child(1) > button svg path,
-.search-field.focused > div:nth-child(3) > button svg path {
-  fill: var(--grey);
-}
-.search-field.focused > div:nth-child(3) > button {
-  display: block;
-}
-.search-field button:focus {
-  outline: 1px solid black;
-}
-.search-field.focused button:hover,
-.search-field.focused button:focus {
-  background-color: var(--off-white);
-}
-.search-field button:hover,
-.left > div:first-child:hover div,
-.additional-btns > div:hover {
-  background-color: var(--header-svg-hover);
-}
-
-.search-field button svg path {
-  fill: var(--off-white);
-}
-
-.right {
-  flex: 144px;
-}
-
-.additional-btns {
-  display: flex;
-  flex-direction: row;
-  width: 144px;
-  height: 48px;
-  align-items: center;
-}
-
-.additional-btns > div {
-  flex: 1;
-  height: 100%;
-  width: 100%;
-  border-radius: 50%;
-}
-
-.additional-btns > div:hover svg path {
-  fill: var(--off-white);
-}
-
-.additional-btns > div:hover svg path,
-.additional-btns > div:hover {
-  transition: all 0.2s ease;
-}
-
-.additional-btns > div > div {
-  height: 46px;
-  width: 46px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.additional-btns > div > div:focus {
-  border-radius: 50%;
-  border: 1px solid var(--grey);
-}
-
-.additional-btns svg {
-  margin: auto;
-}
-
-.left > div:hover,
-.right > div > div:hover {
-  cursor: pointer;
-}
-
-.left a:hover span {
-  text-decoration: underline;
-}
-
-@media (max-width: 1024px) {
-  header .middle {
-    padding-right: 10px;
-  }
-  header {
-    padding-right: 8px;
-  }
-}
-
-@media (max-width: 1278px) and (min-width: 794px) {
-  .search-field {
-    width: 100%;
-  }
-}
-
-@media (max-width: 794px) {
-  .left,
-  header .middle {
-    padding: 0;
-  }
-  .left {
-    padding-right: 10px;
-  }
-  .search-field {
-    width: 50px;
-    background-color: transparent;
-    margin-left: auto;
-  }
-  header input,
-  .search-field div:nth-child(3) {
-    display: none;
-  }
-  /* make the search field disappear and the only thing to appear will be the icon */
+  top: 1px;
 }
 
 .logo-container span:hover,
 .logo-container span:focus {
   outline: none;
-  border: none;
-}
-
-.logo-container span:focus {
   text-decoration: underline;
 }
-.logo-container [data-tool-tip]::before {
-  background-color: black;
-  padding: 12px 16px;
+
+/* ────────────────────────────────────────────
+   Search field
+──────────────────────────────────────────── */
+
+.search-field {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: min(720px, 100%);
+  height: 48px;
+  border-radius: var(--radius-md);
+  background-color: var(--surface-raised);
+  border: 1px solid transparent;
+  transition: background-color var(--transition-med), border-color var(--transition-med), box-shadow var(--transition-med);
+}
+
+.search-field:hover {
+  background-color: #333438;
+}
+
+.search-field.focused {
+  background-color: #fff;
+  border-color: var(--border-focus);
+  box-shadow: 0 4px 20px rgba(251, 188, 4, 0.15);
+}
+
+.search-field input {
+  flex: 1;
+  height: 100%;
+  padding: 0 8px;
   font-size: 16px;
+  font-family: inherit;
+  background-color: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+.search-field.focused input {
+  color: #202124;
+}
+
+.search-field.focused input::placeholder {
+  color: #9aa0a6;
+}
+
+.search-field ::placeholder {
+  color: var(--text-secondary);
+}
+
+.search-field div:nth-child(1),
+.search-field div:nth-child(3) {
+  flex: 0 0 48px;
+  height: 48px;
+  padding: 0 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Clear button: hidden until focused */
+.search-field div:nth-child(3) button {
+  display: none;
+}
+
+.search-field.focused div:nth-child(3) button {
+  display: flex;
+}
+
+.search-field button {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.search-field button:hover {
+  background-color: var(--hover-overlay);
+}
+
+.search-field.focused button:hover {
+  background-color: var(--off-white);
+}
+
+.search-field button svg path {
+  fill: var(--text-secondary);
+  transition: fill var(--transition-fast);
+}
+
+.search-field.focused button svg path {
+  fill: var(--grey);
+}
+
+.search-field button:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+/* ────────────────────────────────────────────
+   Right action buttons
+──────────────────────────────────────────── */
+
+.additional-btns {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+  height: 48px;
+}
+
+.additional-btns > div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.additional-btns > div > div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+}
+
+.additional-btns > div:hover {
+  background-color: var(--hover-overlay);
+}
+
+.additional-btns > div:hover svg path {
+  fill: var(--text-primary);
+}
+
+.additional-btns > div:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+  border-radius: 50%;
+}
+
+/* ────────────────────────────────────────────
+   Logo tooltip override
+──────────────────────────────────────────── */
+
+.logo-container [data-tool-tip]::before {
+  background-color: rgba(30, 30, 35, 0.95);
+  padding: 8px 14px;
+  font-size: 13px;
   left: 0;
   transform: translate(0, 5px);
 }
+
 header .left div:first-child [data-tool-tip]::before {
-  top: calc(100% + 5px);
+  top: calc(100% + 4px);
 }
-.search-field button:hover {
-  cursor: pointer;
+
+/* ────────────────────────────────────────────
+   Responsive
+──────────────────────────────────────────── */
+
+@media (max-width: 1024px) {
+  .left {
+    flex: 0 0 190px;
+  }
+  header .middle {
+    padding: 0 8px;
+  }
+}
+
+@media (max-width: 794px) {
+  .left {
+    flex: 0 0 auto;
+    padding-right: 8px;
+  }
+
+  header .middle {
+    flex: 1;
+    padding: 0 8px;
+  }
+
+  .search-field {
+    width: 100%;
+  }
+
+  /* Collapse search on very small screens */
+  @media (max-width: 480px) {
+    .search-field {
+      width: 44px;
+      background-color: transparent;
+    }
+
+    .search-field input,
+    .search-field div:nth-child(3) {
+      display: none;
+    }
+
+    .search-field.focused {
+      width: 100%;
+      background-color: #fff;
+    }
+
+    .search-field.focused input {
+      display: block;
+    }
+
+    .search-field.focused div:nth-child(3) {
+      display: flex;
+    }
+  }
 }
