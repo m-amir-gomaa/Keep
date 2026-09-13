@@ -6,7 +6,6 @@ import {
   focusIn,
   focusOut,
   getArrayFromLocalStorage,
-  initializeArray,
   makeHoverable
 } from "..";
 import { setLabelFilter } from "../main/notes/notes";
