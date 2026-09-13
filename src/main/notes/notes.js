@@ -148,7 +148,7 @@ export function loadNotes() {
       closeBtn.textContent = "Close";
       closeBtn.setAttribute("aria-label", "Close note");
 
-      closeBtn.addEventListener("click", () => {
+      function closeAndSaveNote() {
         const title = (titleWrapper.querySelector(".mainInput") || titleWrapper.lastChild).textContent.trim();
         const body  = (bodyWrapper.querySelector(".mainInput")  || bodyWrapper.lastChild).textContent.trim();
 
@@ -181,10 +181,26 @@ export function loadNotes() {
         noteContainer.append(freshNoteInputContainer, freshCheckbox, freshImage);
 
         // Re-bind click to expand again
-        [freshNoteInputContainer, freshCheckbox, freshImage].forEach(el =>
-          el.addEventListener("click", activeNoteContainer)
-        );
-      });
+        setTimeout(() => {
+          [freshNoteInputContainer, freshCheckbox, freshImage].forEach(el =>
+            el.addEventListener("click", activeNoteContainer)
+          );
+        }, 0);
+
+        document.removeEventListener("click", onClickOutside);
+      }
+
+      function onClickOutside(e) {
+        if (!noteContainer.contains(e.target)) {
+          closeAndSaveNote();
+        }
+      }
+
+      closeBtn.addEventListener("click", closeAndSaveNote);
+
+      setTimeout(() => {
+        document.addEventListener("click", onClickOutside);
+      }, 0);
 
       const closeBtnContainer = document.createElement("div");
       closeBtnContainer.appendChild(closeBtn);

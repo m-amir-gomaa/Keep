@@ -942,23 +942,64 @@ function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e 
 
 var STORE_KEY = "keep_notes";
 
+/** Generate a simple unique ID. */
+function uid() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+}
+function getInitialNotes() {
+  return [{
+    id: uid(),
+    title: "Clean Architecture",
+    body: "Dependency rules are about controlling the flow of control and data. Dependencies must point inward toward the domain model.",
+    pinned: true,
+    archived: false,
+    deleted: false,
+    color: "",
+    createdAt: Date.now() - 100000,
+    updatedAt: Date.now() - 100000
+  }, {
+    id: uid(),
+    title: "The Pragmatic Programmer",
+    body: "It's not just what you write, it's how you manage state over time. Don't live with broken windows.",
+    pinned: false,
+    archived: false,
+    deleted: false,
+    color: "",
+    createdAt: Date.now() - 200000,
+    updatedAt: Date.now() - 200000
+  }, {
+    id: uid(),
+    title: "Deep Work",
+    body: "Professional activities performed in a state of distraction-free concentration that push your cognitive capabilities to their limit.",
+    pinned: false,
+    archived: false,
+    deleted: false,
+    color: "",
+    createdAt: Date.now() - 300000,
+    updatedAt: Date.now() - 300000
+  }];
+}
+
 /** Read all notes from localStorage. */
 function readAll() {
   try {
-    return JSON.parse(localStorage.getItem(STORE_KEY)) || [];
+    var parsed = JSON.parse(localStorage.getItem(STORE_KEY));
+    if (!parsed || parsed.length === 0) {
+      var initial = getInitialNotes();
+      localStorage.setItem(STORE_KEY, JSON.stringify(initial));
+      return initial;
+    }
+    return parsed;
   } catch (_unused) {
-    return [];
+    var _initial = getInitialNotes();
+    localStorage.setItem(STORE_KEY, JSON.stringify(_initial));
+    return _initial;
   }
 }
 
 /** Persist all notes to localStorage. */
 function writeAll(notes) {
   localStorage.setItem(STORE_KEY, JSON.stringify(notes));
-}
-
-/** Generate a simple unique ID. */
-function uid() {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 }
 
 /* ────────────────────────────────────────────────────────────────────────
@@ -1274,7 +1315,7 @@ function loadNotes() {
       closeBtn.classList.add("special__button");
       closeBtn.textContent = "Close";
       closeBtn.setAttribute("aria-label", "Close note");
-      closeBtn.addEventListener("click", function () {
+      function closeAndSaveNote() {
         var title = (titleWrapper.querySelector(".mainInput") || titleWrapper.lastChild).textContent.trim();
         var body = (bodyWrapper.querySelector(".mainInput") || bodyWrapper.lastChild).textContent.trim();
         if (title || body) {
@@ -1307,10 +1348,22 @@ function loadNotes() {
         noteContainer.append(freshNoteInputContainer, freshCheckbox, freshImage);
 
         // Re-bind click to expand again
-        [freshNoteInputContainer, freshCheckbox, freshImage].forEach(function (el) {
-          return el.addEventListener("click", _activeNoteContainer);
-        });
-      });
+        setTimeout(function () {
+          [freshNoteInputContainer, freshCheckbox, freshImage].forEach(function (el) {
+            return el.addEventListener("click", _activeNoteContainer);
+          });
+        }, 0);
+        document.removeEventListener("click", onClickOutside);
+      }
+      function onClickOutside(e) {
+        if (!noteContainer.contains(e.target)) {
+          closeAndSaveNote();
+        }
+      }
+      closeBtn.addEventListener("click", closeAndSaveNote);
+      setTimeout(function () {
+        document.addEventListener("click", onClickOutside);
+      }, 0);
       var closeBtnContainer = document.createElement("div");
       closeBtnContainer.appendChild(closeBtn);
       actionsContainer.append(iconsContainer, closeBtnContainer);

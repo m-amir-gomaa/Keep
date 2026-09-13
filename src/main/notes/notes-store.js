@@ -20,23 +20,69 @@
 
 const STORE_KEY = "keep_notes";
 
+/** Generate a simple unique ID. */
+function uid() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+}
+
+function getInitialNotes() {
+  return [
+    {
+      id: uid(),
+      title: "Clean Architecture",
+      body: "Dependency rules are about controlling the flow of control and data. Dependencies must point inward toward the domain model.",
+      pinned: true,
+      archived: false,
+      deleted: false,
+      color: "",
+      createdAt: Date.now() - 100000,
+      updatedAt: Date.now() - 100000
+    },
+    {
+      id: uid(),
+      title: "The Pragmatic Programmer",
+      body: "It's not just what you write, it's how you manage state over time. Don't live with broken windows.",
+      pinned: false,
+      archived: false,
+      deleted: false,
+      color: "",
+      createdAt: Date.now() - 200000,
+      updatedAt: Date.now() - 200000
+    },
+    {
+      id: uid(),
+      title: "Deep Work",
+      body: "Professional activities performed in a state of distraction-free concentration that push your cognitive capabilities to their limit.",
+      pinned: false,
+      archived: false,
+      deleted: false,
+      color: "",
+      createdAt: Date.now() - 300000,
+      updatedAt: Date.now() - 300000
+    }
+  ];
+}
+
 /** Read all notes from localStorage. */
 function readAll() {
   try {
-    return JSON.parse(localStorage.getItem(STORE_KEY)) || [];
+    let parsed = JSON.parse(localStorage.getItem(STORE_KEY));
+    if (!parsed || parsed.length === 0) {
+      const initial = getInitialNotes();
+      localStorage.setItem(STORE_KEY, JSON.stringify(initial));
+      return initial;
+    }
+    return parsed;
   } catch {
-    return [];
+    const initial = getInitialNotes();
+    localStorage.setItem(STORE_KEY, JSON.stringify(initial));
+    return initial;
   }
 }
 
 /** Persist all notes to localStorage. */
 function writeAll(notes) {
   localStorage.setItem(STORE_KEY, JSON.stringify(notes));
-}
-
-/** Generate a simple unique ID. */
-function uid() {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 }
 
 /* ────────────────────────────────────────────────────────────────────────
