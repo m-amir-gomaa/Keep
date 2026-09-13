@@ -421,3 +421,45 @@ main .bottom svg {
     margin-left: auto;
   }
 }
+
+/* ────────────────────────────────────────────
+   Color Picker
+──────────────────────────────────────────── */
+
+.color-picker-popover {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  z-index: 100;
+  background-color: var(--surface-overlay);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: 8px;
+  width: 140px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.color-swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: transform var(--transition-fast);
+}
+
+.color-swatch:hover {
+  transform: scale(1.1);
+}
+
+.color-swatch.selected {
+  border-color: var(--accent);
+}
+
+.color-swatch.default {
+  border: 2px solid var(--border);
+}

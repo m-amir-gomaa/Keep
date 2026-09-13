@@ -9,7 +9,9 @@ import {
   initializeArray,
   makeHoverable
 } from "..";
+import { setLabelFilter } from "../main/notes/notes";
 let labels = getArrayFromLocalStorage();
+
 function createFeature(txt, svg) {
   const featureDiv = document.createElement("div");
   featureDiv.classList.add("side__feature");
@@ -37,7 +39,7 @@ function createFeature(txt, svg) {
 }
 
 function createLabelsFeatures() {
-  function createLabelFeature(txt) {
+  function createLabelFeatureEl(txt) {
     const featureDiv = document.createElement("div");
     featureDiv.classList.add("side__feature");
 
@@ -58,11 +60,22 @@ function createLabelsFeatures() {
     featureTxtDiv.appendChild(featureTxt);
     featureDiv.append(IconDiv, featureTxtDiv);
 
-    SideBarDiv.appendChild(featureDiv);
+    return featureDiv;
   }
 
   for (let i = 0; i < labels.length; i++) {
-    createLabelFeature(labels[i]);
+    const featureDiv = createLabelFeatureEl(labels[i]);
+    featureDiv.addEventListener('click', () => {
+      const isSame = featureDiv.classList.contains('active-label');
+      document.querySelectorAll('.side__feature').forEach(el => el.classList.remove('active-label'));
+      if (!isSame) {
+        featureDiv.classList.add('active-label');
+        setLabelFilter(labels[i]);
+      } else {
+        setLabelFilter('');
+      }
+    });
+    SideBarDiv.appendChild(featureDiv);
   }
 }
 

@@ -235,7 +235,9 @@ export function createEditableDiv(txt, parent, expandable = false) {
 /** Seed labels array if absent. */
 export function initializeLabels() {
   if (!localStorage.getItem("labels")) {
-    localStorage.setItem("labels", JSON.stringify(["CSS3", "RANDOM THOUGHTS"]));
+    localStorage.setItem("labels", JSON.stringify([
+      "Work", "Personal", "Ideas", "Dev", "Reading List", "Design", "Urgent", "Finance"
+    ]));
   }
 }
 

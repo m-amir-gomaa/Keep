@@ -426,7 +426,7 @@ function createEditableDiv(txt, parent) {
 /** Seed labels array if absent. */
 function initializeLabels() {
   if (!localStorage.getItem("labels")) {
-    localStorage.setItem("labels", JSON.stringify(["CSS3", "RANDOM THOUGHTS"]));
+    localStorage.setItem("labels", JSON.stringify(["Work", "Personal", "Ideas", "Dev", "Reading List", "Design", "Urgent", "Finance"]));
   }
 }
 function getArrayFromLocalStorage() {
@@ -947,36 +947,95 @@ function uid() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 }
 function getInitialNotes() {
+  var t = Date.now();
   return [{
     id: uid(),
-    title: "Clean Architecture",
-    body: "Dependency rules are about controlling the flow of control and data. Dependencies must point inward toward the domain model.",
+    title: "Portfolio checklist",
+    body: "✅ Keep clone (Vanilla + Next.js)\n✅ Deploy to Vercel\n☐ Add more projects\n☐ Write a solid README for each repo\n☐ Update LinkedIn headline",
+    pinned: true,
+    archived: false,
+    deleted: false,
+    color: "#fff9c4",
+    labels: ["Work", "Urgent"],
+    createdAt: t - 60000,
+    updatedAt: t - 60000
+  }, {
+    id: uid(),
+    title: "Clean Architecture notes",
+    body: "Dependency rules are about controlling the flow of control and data. Dependencies must point inward toward the domain model. High-level policy must never depend on low-level detail.",
     pinned: true,
     archived: false,
     deleted: false,
     color: "",
-    createdAt: Date.now() - 100000,
-    updatedAt: Date.now() - 100000
+    labels: ["Dev", "Reading List"],
+    createdAt: t - 200000,
+    updatedAt: t - 200000
   }, {
     id: uid(),
-    title: "The Pragmatic Programmer",
-    body: "It's not just what you write, it's how you manage state over time. Don't live with broken windows.",
+    title: "Deep Work — key idea",
+    body: "Professional activities performed in a state of distraction-free concentration that push your cognitive capabilities to their limit create new value, improve your skill, and are hard to replicate.",
+    pinned: false,
+    archived: false,
+    deleted: false,
+    color: "#b2dfdb",
+    labels: ["Reading List", "Personal"],
+    createdAt: t - 400000,
+    updatedAt: t - 400000
+  }, {
+    id: uid(),
+    title: "Side project ideas",
+    body: "• AI cover letter generator\n• Real-time code collaboration tool\n• Browser extension for reading time estimates\n• CLI tool for managing dotfiles",
     pinned: false,
     archived: false,
     deleted: false,
     color: "",
-    createdAt: Date.now() - 200000,
-    updatedAt: Date.now() - 200000
+    labels: ["Ideas", "Dev"],
+    createdAt: t - 700000,
+    updatedAt: t - 700000
   }, {
     id: uid(),
-    title: "Deep Work",
-    body: "Professional activities performed in a state of distraction-free concentration that push your cognitive capabilities to their limit.",
+    title: "Design system tokens",
+    body: "Primary: #00f2fe\nSurface: #0d101b\nText: #e8eaf6\nBorder: rgba(255,255,255,0.07)\nRadius: 12px\nFont: Outfit, Inter",
+    pinned: false,
+    archived: false,
+    deleted: false,
+    color: "#e8d5f5",
+    labels: ["Design", "Dev"],
+    createdAt: t - 900000,
+    updatedAt: t - 900000
+  }, {
+    id: uid(),
+    title: "Monthly budget",
+    body: "Rent: 4000\nGroceries: ~1200\nSubscriptions: 350\nSavings target: 2000\nMisc: 800",
+    pinned: false,
+    archived: false,
+    deleted: false,
+    color: "#c8e6c9",
+    labels: ["Finance", "Personal"],
+    createdAt: t - 1200000,
+    updatedAt: t - 1200000
+  }, {
+    id: uid(),
+    title: "Meeting agenda — Monday",
+    body: "1. Sprint review & retrospective\n2. Q4 roadmap alignment\n3. Discuss API rate limiting strategy\n4. Team async standup process",
     pinned: false,
     archived: false,
     deleted: false,
     color: "",
-    createdAt: Date.now() - 300000,
-    updatedAt: Date.now() - 300000
+    labels: ["Work"],
+    createdAt: t - 1500000,
+    updatedAt: t - 1500000
+  }, {
+    id: uid(),
+    title: "CSS Grid cheatsheet",
+    body: "grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));\ngap: 1rem;\nalign-items: start;\n\nParent sets the grid, children fill it. Use subgrid for nested alignment.",
+    pinned: false,
+    archived: false,
+    deleted: false,
+    color: "#bbdefb",
+    labels: ["Dev", "Design"],
+    createdAt: t - 2000000,
+    updatedAt: t - 2000000
   }];
 }
 
@@ -1039,7 +1098,7 @@ function getDeletedNotes() {
 
 /**
  * Create a new note and persist it.
- * @param {{ title?: string, body?: string, pinned?: boolean, color?: string }} partial
+ * @param {{ title?: string, body?: string, pinned?: boolean, color?: string, labels?: string[] }} partial
  */
 function saveNote() {
   var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
@@ -1050,7 +1109,9 @@ function saveNote() {
     _ref$pinned = _ref.pinned,
     pinned = _ref$pinned === void 0 ? false : _ref$pinned,
     _ref$color = _ref.color,
-    color = _ref$color === void 0 ? "" : _ref$color;
+    color = _ref$color === void 0 ? "" : _ref$color,
+    _ref$labels = _ref.labels,
+    labels = _ref$labels === void 0 ? [] : _ref$labels;
   if (!title.trim() && !body.trim()) return null; // skip empty
 
   var note = {
@@ -1061,6 +1122,7 @@ function saveNote() {
     archived: false,
     deleted: false,
     color: color,
+    labels: labels,
     createdAt: Date.now(),
     updatedAt: Date.now()
   };
@@ -1167,6 +1229,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   activeNoteContainer: () => (/* binding */ _activeNoteContainer),
 /* harmony export */   loadNotes: () => (/* binding */ loadNotes),
+/* harmony export */   notesGridElement: () => (/* binding */ notesGridElement),
+/* harmony export */   setLabelFilter: () => (/* binding */ setLabelFilter),
+/* harmony export */   setNotesGridElement: () => (/* binding */ setNotesGridElement),
 /* harmony export */   toggleSide: () => (/* binding */ toggleSide)
 /* harmony export */ });
 /* harmony import */ var ___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../.. */ "./src/index.js");
@@ -1185,6 +1250,182 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
 
 var _activeNoteContainer;
 var toggleSide;
+var searchQuery = '';
+var activeLabelFilter = '';
+var _renderFn = null; // set by loadNotes once the grid exists
+
+var COLORS = [{
+  name: 'Default',
+  value: ''
+}, {
+  name: 'Red',
+  value: '#5c2b29'
+}, {
+  name: 'Orange',
+  value: '#614a19'
+}, {
+  name: 'Yellow',
+  value: '#635d19'
+}, {
+  name: 'Green',
+  value: '#345920'
+}, {
+  name: 'Teal',
+  value: '#16504b'
+}, {
+  name: 'Blue',
+  value: '#2d555e'
+}, {
+  name: 'Dark blue',
+  value: '#1e3a5f'
+}, {
+  name: 'Purple',
+  value: '#42275e'
+}, {
+  name: 'Pink',
+  value: '#5b2245'
+}, {
+  name: 'Brown',
+  value: '#442f19'
+}, {
+  name: 'Gray',
+  value: '#3c3f43'
+}];
+function createColorPicker(currentColor, onColorSelect) {
+  var container = document.createElement("div");
+  container.classList.add("color-picker-container");
+  container.style.position = "relative";
+  var btn = (0,_main__WEBPACK_IMPORTED_MODULE_1__.createSVGIcon_Container)(SVG.bgOptions);
+  (0,___WEBPACK_IMPORTED_MODULE_0__.makeHoverable)(btn, "Background options");
+  (0,___WEBPACK_IMPORTED_MODULE_0__.makeFocusable)(btn);
+  var popover = document.createElement("div");
+  popover.classList.add("color-picker-popover");
+  popover.style.display = "none";
+  COLORS.forEach(function (c) {
+    var swatch = document.createElement("div");
+    swatch.classList.add("color-swatch");
+    if (c.value === "") {
+      swatch.classList.add("default");
+    } else {
+      swatch.style.backgroundColor = c.value;
+    }
+    if (currentColor === c.value) swatch.classList.add("selected");
+    swatch.title = c.name;
+    swatch.addEventListener("click", function (e) {
+      e.stopPropagation();
+      onColorSelect(c.value);
+      popover.style.display = "none";
+      Array.from(popover.children).forEach(function (child) {
+        return child.classList.remove("selected");
+      });
+      swatch.classList.add("selected");
+    });
+    popover.appendChild(swatch);
+  });
+  btn.addEventListener("click", function (e) {
+    e.stopPropagation();
+    popover.style.display = popover.style.display === "none" ? "flex" : "none";
+  });
+  document.addEventListener("click", function (e) {
+    if (!container.contains(e.target)) popover.style.display = "none";
+  });
+  container.append(btn, popover);
+  return container;
+}
+function createLabelPicker(currentLabels, onLabelsChange) {
+  var container = document.createElement("div");
+  container.classList.add("label-picker-container");
+  container.style.position = "relative";
+  var labelSVG = "<svg xmlns=\"http://www.w3.org/2000/svg\" height=\"24\" viewBox=\"0 -960 960 960\" width=\"24\" fill=\"currentColor\"><path d=\"M840-480 666-234q-11 16-28.5 25t-37.5 9H200q-33 0-56.5-23.5T120-280v-400q0-33 23.5-56.5T200-760h400q20 0 37.5 9t28.5 25l174 246Zm-98 0L600-680H200v400h400l142-200Zm-542 0v200-400 200Z\"/></svg>";
+  var btn = (0,_main__WEBPACK_IMPORTED_MODULE_1__.createSVGIcon_Container)(SVG.more || SVG.image); // fallback
+  btn.innerHTML = labelSVG;
+  btn.classList.add("special__button");
+  (0,___WEBPACK_IMPORTED_MODULE_0__.makeHoverable)(btn, "Add labels");
+  (0,___WEBPACK_IMPORTED_MODULE_0__.makeFocusable)(btn);
+  var popover = document.createElement("div");
+  popover.classList.add("label-picker-popover");
+  popover.style.display = "none";
+  popover.style.position = "absolute";
+  popover.style.bottom = "100%";
+  popover.style.left = "0";
+  popover.style.backgroundColor = "var(--surface-overlay)";
+  popover.style.border = "1px solid var(--border)";
+  popover.style.padding = "8px";
+  popover.style.borderRadius = "4px";
+  popover.style.zIndex = "100";
+  popover.style.maxHeight = "200px";
+  popover.style.overflowY = "auto";
+  popover.style.width = "180px";
+  var title = document.createElement("div");
+  title.textContent = "Label note";
+  title.style.fontSize = "14px";
+  title.style.marginBottom = "8px";
+  title.style.fontWeight = "bold";
+  popover.appendChild(title);
+  function renderLabels() {
+    while (popover.children.length > 1) {
+      popover.removeChild(popover.lastChild);
+    }
+    var allLabels = JSON.parse(localStorage.getItem("labels")) || [];
+    allLabels.forEach(function (lbl) {
+      var row = document.createElement("div");
+      row.style.display = "flex";
+      row.style.alignItems = "center";
+      row.style.gap = "8px";
+      row.style.padding = "4px 0";
+      row.style.cursor = "pointer";
+      var cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.checked = currentLabels.includes(lbl);
+      cb.style.cursor = "pointer";
+      var span = document.createElement("span");
+      span.textContent = lbl;
+      span.style.fontSize = "13px";
+      row.appendChild(cb);
+      row.appendChild(span);
+      row.addEventListener("click", function (e) {
+        e.stopPropagation();
+        cb.checked = !cb.checked;
+        if (cb.checked) {
+          if (!currentLabels.includes(lbl)) currentLabels.push(lbl);
+        } else {
+          currentLabels = currentLabels.filter(function (l) {
+            return l !== lbl;
+          });
+        }
+        onLabelsChange(_toConsumableArray(currentLabels));
+      });
+      cb.addEventListener("click", function (e) {
+        return e.stopPropagation();
+      });
+      cb.addEventListener("change", function (e) {
+        if (e.target.checked) {
+          if (!currentLabels.includes(lbl)) currentLabels.push(lbl);
+        } else {
+          currentLabels = currentLabels.filter(function (l) {
+            return l !== lbl;
+          });
+        }
+        onLabelsChange(_toConsumableArray(currentLabels));
+      });
+      popover.appendChild(row);
+    });
+  }
+  btn.addEventListener("click", function (e) {
+    e.stopPropagation();
+    if (popover.style.display === "none") {
+      renderLabels();
+      popover.style.display = "block";
+    } else {
+      popover.style.display = "none";
+    }
+  });
+  document.addEventListener("click", function (e) {
+    if (!container.contains(e.target)) popover.style.display = "none";
+  });
+  container.append(btn, popover);
+  return container;
+}
 var SVG = {
   pin: "<svg xmlns=\"http://www.w3.org/2000/svg\" height=\"24\" viewBox=\"0 -960 960 960\" width=\"24\"><path d=\"m640-480 80 80v80H520v240l-40 40-40-40v-240H240v-80l80-80v-280h-40v-80h400v80h-40v280Zm-286 80h252l-46-46v-314H400v314l-46 46Zm126 0Z\"/></svg>",
   pinFilled: "<svg xmlns=\"http://www.w3.org/2000/svg\" height=\"24\" viewBox=\"0 -960 960 960\" width=\"24\"><path d=\"m640-480 80 80v80H520v240l-40 40-40-40v-240H240v-80l80-80v-280h-40v-80h400v80h-40v280Z\"/></svg>",
@@ -1237,6 +1478,9 @@ function loadNotes() {
       noteContainer.removeChild(noteImageIconContainer);
       noteContainer.classList.remove("take-note");
       noteContainer.classList.add("take-note--active");
+      var noteColor = "";
+      var noteLabels = [];
+      noteContainer.style.backgroundColor = "";
 
       /* ─── TOP: title + pin ─── */
       var top = document.createElement("div");
@@ -1285,9 +1529,6 @@ function loadNotes() {
         svg: SVG.collaborator,
         tip: "Collaborator"
       }, {
-        svg: SVG.bgOptions,
-        tip: "Background options"
-      }, {
         svg: SVG.addImage,
         tip: "Add image"
       }, {
@@ -1311,6 +1552,15 @@ function loadNotes() {
         (0,___WEBPACK_IMPORTED_MODULE_0__.makeFocusable)(btn);
         iconsContainer.appendChild(btn);
       });
+      var colorPicker = createColorPicker(noteColor, function (c) {
+        noteColor = c;
+        noteContainer.style.backgroundColor = c;
+      });
+      var labelPicker = createLabelPicker(noteLabels, function (lbls) {
+        noteLabels = lbls;
+      });
+      iconsContainer.insertBefore(colorPicker, iconsContainer.children[2]);
+      iconsContainer.insertBefore(labelPicker, iconsContainer.children[3]);
       var closeBtn = document.createElement("button");
       closeBtn.classList.add("special__button");
       closeBtn.textContent = "Close";
@@ -1323,7 +1573,9 @@ function loadNotes() {
             title: title,
             body: body,
             pinned: isPinned,
-            archived: false
+            archived: false,
+            color: noteColor,
+            labels: noteLabels
           });
           renderNoteCards(notesGrid);
         }
@@ -1381,6 +1633,23 @@ function loadNotes() {
   function renderNoteCards(container) {
     container.innerHTML = "";
     var notes = (0,_notes_store__WEBPACK_IMPORTED_MODULE_3__.getNotes)();
+
+    // Apply label filter
+    if (activeLabelFilter) {
+      notes = notes.filter(function (n) {
+        return (n.labels || []).includes(activeLabelFilter);
+      });
+    }
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      var q = searchQuery.toLowerCase();
+      notes = notes.filter(function (n) {
+        return (n.title || '').toLowerCase().includes(q) || (n.body || '').toLowerCase().includes(q) || (n.labels || []).some(function (l) {
+          return l.toLowerCase().includes(q);
+        });
+      });
+    }
     var pinned = notes.filter(function (n) {
       return n.pinned;
     });
@@ -1406,11 +1675,27 @@ function loadNotes() {
     } else {
       renderGroup([].concat(_toConsumableArray(pinned), _toConsumableArray(others)), "");
     }
+
+    // Empty state
+    if (!notes.length) {
+      var empty = document.createElement("div");
+      empty.style.cssText = "grid-column: 1/-1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 0; opacity: 0.6; text-align: center;";
+      var msg = searchQuery.trim() || activeLabelFilter ? "No notes match \"".concat(searchQuery || activeLabelFilter, "\"") : "Notes you add appear here";
+      empty.innerHTML = "<svg xmlns=\"http://www.w3.org/2000/svg\" height=\"80\" viewBox=\"0 -960 960 960\" width=\"80\" style=\"margin-bottom:12px;opacity:0.5\"><path fill=\"currentColor\" d=\"M320-240h320v-80H320v80Zm0-160h320v-80H320v80ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H240Zm280-520v-200H240v640h480v-440H520ZM240-800v200-200 640-640Z\"/></svg><p style=\"font-size:16px\">".concat(msg, "</p>");
+      container.appendChild(empty);
+    }
   }
   function buildNoteCard(note, container) {
     var card = document.createElement("div");
     card.classList.add("note-card");
     if (note.pinned) card.classList.add("pinned");
+    if (note.color) card.style.backgroundColor = note.color;
+    card.addEventListener("click", function (e) {
+      if (e.target.closest('.note-card__actions') || e.target.closest('.pinned-badge')) {
+        return;
+      }
+      openEditModal(note, container);
+    });
     if (note.title) {
       var title = document.createElement("div");
       title.classList.add("note-card__title");
@@ -1422,6 +1707,24 @@ function loadNotes() {
       _body.classList.add("note-card__body");
       _body.textContent = note.body;
       card.appendChild(_body);
+    }
+    if (note.labels && note.labels.length > 0) {
+      var labelsContainer = document.createElement("div");
+      labelsContainer.style.display = "flex";
+      labelsContainer.style.flexWrap = "wrap";
+      labelsContainer.style.gap = "4px";
+      labelsContainer.style.marginTop = "8px";
+      note.labels.forEach(function (lbl) {
+        var chip = document.createElement("span");
+        chip.textContent = lbl;
+        chip.style.fontSize = "11px";
+        chip.style.backgroundColor = "rgba(0,0,0,0.1)";
+        chip.style.padding = "2px 8px";
+        chip.style.borderRadius = "10px";
+        chip.style.border = "1px solid var(--border)";
+        labelsContainer.appendChild(chip);
+      });
+      card.appendChild(labelsContainer);
     }
     if (note.pinned) {
       var badge = document.createElement("div");
@@ -1465,16 +1768,147 @@ function loadNotes() {
       (0,_notes_store__WEBPACK_IMPORTED_MODULE_3__.togglePin)(note.id);
       renderNoteCards(container);
     });
-    actions.append(pinBtn, archiveBtn, deleteBtn);
+    var colorPicker = createColorPicker(note.color || "", function (c) {
+      (0,_notes_store__WEBPACK_IMPORTED_MODULE_3__.updateNote)(note.id, {
+        color: c
+      });
+      renderNoteCards(container);
+    });
+    var labelPicker = createLabelPicker(note.labels || [], function (lbls) {
+      (0,_notes_store__WEBPACK_IMPORTED_MODULE_3__.updateNote)(note.id, {
+        labels: lbls
+      });
+      renderNoteCards(container);
+    });
+    actions.append(pinBtn, colorPicker, labelPicker, archiveBtn, deleteBtn);
     card.appendChild(actions);
     return card;
+  }
+
+  /* ── Edit Modal ── */
+  function openEditModal(note, container) {
+    var overlay = document.createElement("div");
+    overlay.classList.add("modal-overlay");
+    overlay.style.position = "fixed";
+    overlay.style.top = "0";
+    overlay.style.left = "0";
+    overlay.style.width = "100%";
+    overlay.style.height = "100%";
+    overlay.style.backgroundColor = "rgba(0,0,0,0.6)";
+    overlay.style.zIndex = "1000";
+    overlay.style.display = "flex";
+    overlay.style.alignItems = "center";
+    overlay.style.justifyContent = "center";
+    var modal = document.createElement("div");
+    modal.classList.add("take-note--active");
+    modal.style.width = "min(600px, 90%)";
+    modal.style.maxHeight = "90vh";
+    modal.style.overflowY = "visible";
+    modal.style.position = "relative";
+    modal.style.cursor = "default";
+    var editColor = note.color || "";
+    var editLabels = _toConsumableArray(note.labels || []);
+    if (editColor) modal.style.backgroundColor = editColor;
+
+    // Disable global outside click when modal is open
+    modal.addEventListener("click", function (e) {
+      return e.stopPropagation();
+    });
+    var top = document.createElement("div");
+    top.classList.add("top");
+    var titleWrapper = (0,___WEBPACK_IMPORTED_MODULE_0__.createEditableDiv)("Title", top);
+    var titleInput = titleWrapper.querySelector(".mainInput") || titleWrapper.lastChild;
+    titleInput.textContent = note.title;
+    if (note.title) titleWrapper.firstChild.style.display = "none";
+    var pinIcon = (0,___WEBPACK_IMPORTED_MODULE_0__.createSVGIcon)(SVG.pin);
+    var pinIconFilled = (0,___WEBPACK_IMPORTED_MODULE_0__.createSVGIcon)(SVG.pinFilled);
+    var isPinned = note.pinned;
+    var pinBtn = document.createElement("div");
+    pinBtn.appendChild(isPinned ? pinIconFilled : pinIcon);
+    (0,___WEBPACK_IMPORTED_MODULE_0__.makeHoverable)(pinBtn, isPinned ? "Unpin note" : "Pin note");
+    pinBtn.addEventListener("click", function () {
+      isPinned = !isPinned;
+      (0,_main__WEBPACK_IMPORTED_MODULE_1__.toggleIcon)(pinBtn, isPinned ? pinIcon : pinIconFilled, isPinned ? pinIconFilled : pinIcon);
+      (0,___WEBPACK_IMPORTED_MODULE_0__.makeHoverable)(pinBtn, isPinned ? "Unpin note" : "Pin note");
+    });
+    var IconDiv = document.createElement("div");
+    IconDiv.appendChild(pinBtn);
+    top.append(titleWrapper, IconDiv);
+    var middle = document.createElement("div");
+    middle.classList.add("middle");
+    var bodyWrapper = (0,___WEBPACK_IMPORTED_MODULE_0__.createEditableDiv)("Take a note…", middle, true);
+    var bodyInput = bodyWrapper.querySelector(".mainInput") || bodyWrapper.lastChild;
+    bodyInput.textContent = note.body;
+    if (note.body) bodyWrapper.firstChild.style.display = "none";
+    middle.appendChild(bodyWrapper);
+    var bottom = document.createElement("div");
+    bottom.classList.add("bottom");
+    var actionsContainer = document.createElement("div");
+    var iconsContainer = document.createElement("div");
+    iconsContainer.style.display = "flex";
+    iconsContainer.style.alignItems = "center";
+    var colorPicker = createColorPicker(editColor, function (c) {
+      editColor = c;
+      modal.style.backgroundColor = c;
+    });
+    var labelPicker = createLabelPicker(editLabels, function (lbls) {
+      editLabels = lbls;
+    });
+    iconsContainer.appendChild(colorPicker);
+    iconsContainer.appendChild(labelPicker);
+    var closeBtnContainer = document.createElement("div");
+    var closeBtn = document.createElement("button");
+    closeBtn.classList.add("special__button");
+    closeBtn.textContent = "Close";
+    closeBtnContainer.appendChild(closeBtn);
+    function saveAndClose() {
+      var updatedTitle = titleInput.textContent.trim();
+      var updatedBody = bodyInput.textContent.trim();
+      (0,_notes_store__WEBPACK_IMPORTED_MODULE_3__.updateNote)(note.id, {
+        title: updatedTitle,
+        body: updatedBody,
+        pinned: isPinned,
+        color: editColor,
+        labels: editLabels
+      });
+      renderNoteCards(container);
+      document.body.removeChild(overlay);
+    }
+    closeBtn.addEventListener("click", saveAndClose);
+    overlay.addEventListener("click", function (e) {
+      if (e.target === overlay) saveAndClose();
+    });
+    actionsContainer.append(iconsContainer, closeBtnContainer);
+    bottom.appendChild(actionsContainer);
+    modal.append(top, middle, bottom);
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
   }
 
   /* ── Bootstrap ── */
   function createNotes() {
     loadTakeNoteDiv();
+
+    // Search bar
+    var searchBar = document.createElement("div");
+    searchBar.style.cssText = "max-width:600px;margin:0 auto 24px;display:flex;align-items:center;background:var(--surface-main,#1e2028);border:1px solid var(--border,rgba(255,255,255,0.1));border-radius:12px;padding:0 12px;gap:8px;";
+    var searchIcon = document.createElement("span");
+    searchIcon.innerHTML = "<svg xmlns=\"http://www.w3.org/2000/svg\" height=\"18\" viewBox=\"0 -960 960 960\" width=\"18\" fill=\"currentColor\" style=\"opacity:0.5\"><path d=\"M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z\"/></svg>";
+    var searchInput = document.createElement("input");
+    searchInput.type = "text";
+    searchInput.placeholder = "Search notes, labels...";
+    searchInput.style.cssText = "flex:1;background:transparent;border:none;outline:none;color:inherit;font-size:14px;padding:10px 0;";
+    searchInput.addEventListener("input", function (e) {
+      searchQuery = e.target.value;
+      renderNoteCards(notesGrid);
+    });
+    searchBar.append(searchIcon, searchInput);
     renderNoteCards(notesGrid);
-    main.append(noteDiv, notesGrid);
+    main.append(noteDiv, searchBar, notesGrid);
+    // expose render function to module scope
+    _renderFn = function _renderFn() {
+      return renderNoteCards(notesGrid);
+    };
     return main;
   }
   createNotes();
@@ -1482,6 +1916,18 @@ function loadNotes() {
   body.appendChild(main);
 }
 
+
+/** Allow sidebar or other modules to set a label filter. */
+function setLabelFilter(label) {
+  activeLabelFilter = label;
+  if (_renderFn) _renderFn();
+}
+
+/** Register the notes grid so sidebar can trigger re-renders */
+var notesGridElement = null;
+function setNotesGridElement(el) {
+  notesGridElement = el;
+}
 
 /***/ }),
 
@@ -1630,7 +2076,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   removeClassOnSmallScreen: () => (/* binding */ removeClassOnSmallScreen)
 /* harmony export */ });
 /* harmony import */ var ___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! .. */ "./src/index.js");
+/* harmony import */ var _main_notes_notes__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../main/notes/notes */ "./src/main/notes/notes.js");
 var SideBarDiv = document.createElement("div");
+
 
 
 var labels = (0,___WEBPACK_IMPORTED_MODULE_0__.getArrayFromLocalStorage)();
@@ -1654,7 +2102,7 @@ function createFeature(txt, svg) {
   SideBarDiv.appendChild(featureDiv);
 }
 function createLabelsFeatures() {
-  function createLabelFeature(txt) {
+  function createLabelFeatureEl(txt) {
     var featureDiv = document.createElement("div");
     featureDiv.classList.add("side__feature");
     featureDiv.id = txt.split(" ").join("-");
@@ -1671,10 +2119,26 @@ function createLabelsFeatures() {
     featureTxt.textContent = txt;
     featureTxtDiv.appendChild(featureTxt);
     featureDiv.append(IconDiv, featureTxtDiv);
-    SideBarDiv.appendChild(featureDiv);
+    return featureDiv;
   }
+  var _loop = function _loop(i) {
+    var featureDiv = createLabelFeatureEl(labels[i]);
+    featureDiv.addEventListener('click', function () {
+      var isSame = featureDiv.classList.contains('active-label');
+      document.querySelectorAll('.side__feature').forEach(function (el) {
+        return el.classList.remove('active-label');
+      });
+      if (!isSame) {
+        featureDiv.classList.add('active-label');
+        (0,_main_notes_notes__WEBPACK_IMPORTED_MODULE_1__.setLabelFilter)(labels[i]);
+      } else {
+        (0,_main_notes_notes__WEBPACK_IMPORTED_MODULE_1__.setLabelFilter)('');
+      }
+    });
+    SideBarDiv.appendChild(featureDiv);
+  };
   for (var i = 0; i < labels.length; i++) {
-    createLabelFeature(labels[i]);
+    _loop(i);
   }
 }
 function loadSide() {
@@ -3554,7 +4018,49 @@ main .bottom svg {
     margin-left: auto;
   }
 }
-`, "",{"version":3,"sources":["webpack://./src/main/notes/notes.css"],"names":[],"mappings":"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","sourcesContent":["/* ────────────────────────────────────────────\n   Notes wrapper\n──────────────────────────────────────────── */\n\nmain > div:first-child {\n  width: 100%;\n  padding: 24px 16px 16px;\n}\n\n/* ────────────────────────────────────────────\n   \"Take a note\" collapsed bar\n──────────────────────────────────────────── */\n\n.take-note,\n.take-note--active {\n  color: var(--text-secondary);\n  width: min(600px, calc(100% - 32px));\n  margin: 0 auto;\n  border: 1px solid var(--border);\n  border-radius: var(--radius-md);\n  background-color: var(--surface);\n  box-shadow: var(--shadow-sm);\n  transition: box-shadow var(--transition-med), border-color var(--transition-med);\n}\n\n.take-note {\n  display: flex;\n  align-items: center;\n  padding: 0 4px 0 0;\n  cursor: text;\n}\n\n.take-note:hover {\n  box-shadow: var(--shadow-md);\n  border-color: var(--border);\n}\n\n.take-note > div:first-child {\n  flex: 1;\n}\n\n.take-note > div:first-child > input {\n  height: 48px;\n  width: 100%;\n  padding: 12px 16px;\n  background-color: transparent;\n  outline: none;\n  border: none;\n  font-size: 15px;\n  font-family: inherit;\n  color: var(--text-secondary);\n  cursor: text;\n}\n\n.take-note input::placeholder {\n  color: var(--text-muted);\n}\n\n.take-note > div:not(:first-child) {\n  flex: 0 0 46px;\n  height: 46px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  border-radius: 50%;\n  cursor: pointer;\n  transition: background-color var(--transition-fast);\n}\n\n.take-note > div:not(:first-child):hover {\n  background-color: var(--hover-overlay);\n}\n\n.take-note > div:not(:first-child):hover svg path {\n  fill: var(--text-primary);\n}\n\n/* ────────────────────────────────────────────\n   Expanded note card\n──────────────────────────────────────────── */\n\n.take-note--active {\n  flex-direction: column;\n  animation: noteExpand 0.2s cubic-bezier(0.4, 0, 0.2, 1);\n  box-shadow: var(--shadow-lg);\n  border-color: var(--border);\n}\n\n@keyframes noteExpand {\n  from { transform: scaleY(0.95); opacity: 0.7; }\n  to   { transform: scaleY(1); opacity: 1; }\n}\n\n/* Top row: title + pin */\n.take-note--active .top,\n.take-note--active .middle,\n.take-note--active .bottom {\n  display: flex;\n  width: 100%;\n}\n\nmain .top {\n  min-height: 52px;\n  position: relative;\n  align-items: flex-start;\n}\n\nmain .top > div:first-child {\n  flex: 1;\n  position: relative;\n  min-height: 52px;\n}\n\nmain .top > div:first-child > div {\n  width: 100%;\n  height: 100%;\n  min-height: 52px;\n  outline: none;\n  border: none;\n  padding: 14px 16px 6px;\n  font-size: 16px;\n  font-weight: 600;\n  font-family: inherit;\n  color: var(--text-primary);\n}\n\nmain .top > div:nth-child(2) {\n  flex: 0 0 48px;\n}\n\nmain .top > div:nth-child(2) > div {\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  width: 36px;\n  height: 36px;\n  margin: 8px auto 0;\n  border-radius: 50%;\n  cursor: pointer;\n  transition: background-color var(--transition-fast);\n}\n\nmain .top > div:nth-child(2) > div:hover {\n  background-color: var(--hover-overlay);\n}\n\nmain .top > div:nth-child(2) > div svg path {\n  fill: var(--text-secondary);\n  transition: fill var(--transition-fast);\n}\n\nmain .top > div:nth-child(2) > div:hover svg path {\n  fill: var(--text-primary);\n}\n\n/* Middle row: body text */\n.take-note--active .middle {\n  min-height: 60px;\n  position: relative;\n}\n\n.take-note--active .middle > div {\n  min-width: 100%;\n  min-height: 60px;\n  position: relative;\n}\n\n.take-note--active .middle > div > div {\n  font-size: 14px;\n  outline: none;\n  border: none;\n  padding: 8px 16px 12px;\n  color: var(--text-primary);\n  line-height: 1.6;\n}\n\n/* ────────────────────────────────────────────\n   Placeholder overlay\n──────────────────────────────────────────── */\n\n.placeholder {\n  position: absolute;\n  inset: 0;\n  pointer-events: none;\n  letter-spacing: 0.01785714em;\n  font-family: \"Google Sans\", Roboto, Arial, sans-serif;\n  font-size: 0.875rem;\n  font-weight: 500;\n  line-height: 1.25rem;\n  color: var(--text-muted);\n  padding: 14px 16px 6px;\n}\n\n/* Title placeholder offset */\nmain .top .placeholder {\n  padding: 14px 16px 6px;\n}\n\n/* Body placeholder offset */\n.take-note--active .middle .placeholder {\n  padding: 8px 16px 12px;\n  font-weight: 400;\n}\n\n.mainInput {\n  position: relative;\n  z-index: 1;\n  color: var(--text-primary);\n  font-size: 14px;\n  outline: none;\n  min-height: 24px;\n}\n\nmain .top .mainInput {\n  font-size: 16px;\n  font-weight: 600;\n}\n\n/* ────────────────────────────────────────────\n   Bottom toolbar\n──────────────────────────────────────────── */\n\nmain .bottom {\n  min-height: 44px;\n  border-top: 1px solid var(--border);\n}\n\nmain .bottom > div {\n  width: 100%;\n  height: 44px;\n  display: flex;\n  align-items: center;\n  padding: 4px 8px;\n}\n\nmain .bottom > div > div:first-child {\n  flex: 1;\n  display: flex;\n  align-items: center;\n  gap: 2px;\n}\n\nmain .bottom > div > div:first-child > div {\n  width: 34px;\n  height: 34px;\n  border-radius: 50%;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  cursor: pointer;\n  transition: background-color var(--transition-fast);\n  flex-shrink: 0;\n}\n\nmain .bottom > div > div:first-child > div:hover {\n  background-color: var(--hover-overlay);\n}\n\nmain .bottom > div > div:first-child > div:hover svg path {\n  fill: var(--text-primary);\n}\n\nmain .bottom > div > div:not(:first-child) {\n  flex: 0 0 auto;\n}\n\nmain .bottom svg {\n  width: 18px;\n  height: 18px;\n}\n\n/* ────────────────────────────────────────────\n   Saved notes grid\n──────────────────────────────────────────── */\n\n.notes-grid {\n  display: grid;\n  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));\n  gap: 16px;\n  padding: 16px;\n  animation: fadeIn 0.3s ease;\n}\n\n.note-card {\n  background-color: var(--surface);\n  border: 1px solid var(--border);\n  border-radius: var(--radius-md);\n  padding: 16px;\n  cursor: pointer;\n  position: relative;\n  transition: box-shadow var(--transition-med), border-color var(--transition-med), transform var(--transition-fast);\n  animation: noteIn 0.25s ease;\n}\n\n@keyframes noteIn {\n  from { opacity: 0; transform: translateY(10px) scale(0.98); }\n  to   { opacity: 1; transform: translateY(0) scale(1); }\n}\n\n.note-card:hover {\n  box-shadow: var(--shadow-md);\n  border-color: rgba(255, 255, 255, 0.2);\n  transform: translateY(-2px);\n}\n\n.note-card__title {\n  font-size: 16px;\n  font-weight: 600;\n  color: var(--text-primary);\n  margin-bottom: 6px;\n  word-break: break-word;\n}\n\n.note-card__body {\n  font-size: 14px;\n  color: var(--text-secondary);\n  line-height: 1.5;\n  word-break: break-word;\n  white-space: pre-wrap;\n  max-height: 200px;\n  overflow: hidden;\n}\n\n.note-card__actions {\n  display: flex;\n  align-items: center;\n  gap: 4px;\n  margin-top: 12px;\n  opacity: 0;\n  transition: opacity var(--transition-fast);\n}\n\n.note-card:hover .note-card__actions {\n  opacity: 1;\n}\n\n.note-card__action-btn {\n  width: 32px;\n  height: 32px;\n  border: none;\n  background: transparent;\n  border-radius: 50%;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  cursor: pointer;\n  transition: background-color var(--transition-fast);\n}\n\n.note-card__action-btn:hover {\n  background-color: var(--hover-overlay);\n}\n\n.note-card__action-btn svg {\n  width: 18px;\n  height: 18px;\n}\n\n.note-card__action-btn svg path {\n  fill: var(--text-secondary);\n}\n\n.note-card__action-btn:hover svg path {\n  fill: var(--text-primary);\n}\n\n.note-card.pinned {\n  border-color: rgba(251, 188, 4, 0.3);\n}\n\n.pinned-badge {\n  position: absolute;\n  top: 10px;\n  right: 10px;\n}\n\n.pinned-badge svg {\n  width: 16px;\n  height: 16px;\n}\n\n.pinned-badge svg path {\n  fill: var(--accent);\n}\n\n/* Section label above grids */\n.notes-section-label {\n  padding: 4px 16px 2px;\n  font-size: 11px;\n  font-weight: 600;\n  letter-spacing: 0.1em;\n  text-transform: uppercase;\n  color: var(--text-muted);\n}\n\n/* ────────────────────────────────────────────\n   Responsive\n──────────────────────────────────────────── */\n\n@media (max-width: 680px) {\n  .take-note,\n  .take-note--active {\n    width: calc(100% - 16px);\n  }\n\n  .notes-grid {\n    grid-template-columns: 1fr;\n    padding: 8px;\n  }\n}\n\n@media (max-width: 530px) {\n  main .bottom > div {\n    flex-wrap: wrap;\n    height: auto;\n    padding: 6px 8px;\n    gap: 4px;\n  }\n\n  main .bottom > div > div:not(:first-child) {\n    margin-left: auto;\n  }\n}\n"],"sourceRoot":""}]);
+
+/* ────────────────────────────────────────────
+   Color Picker
+──────────────────────────────────────────── */
+
+.color-picker-popover {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  z-index: 100;
+  background-color: var(--surface-overlay);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: 8px;
+  width: 140px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.color-swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: transform var(--transition-fast);
+}
+
+.color-swatch:hover {
+  transform: scale(1.1);
+}
+
+.color-swatch.selected {
+  border-color: var(--accent);
+}
+
+.color-swatch.default {
+  border: 2px solid var(--border);
+}
+`, "",{"version":3,"sources":["webpack://./src/main/notes/notes.css"],"names":[],"mappings":"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","sourcesContent":["/* ────────────────────────────────────────────\n   Notes wrapper\n──────────────────────────────────────────── */\n\nmain > div:first-child {\n  width: 100%;\n  padding: 24px 16px 16px;\n}\n\n/* ────────────────────────────────────────────\n   \"Take a note\" collapsed bar\n──────────────────────────────────────────── */\n\n.take-note,\n.take-note--active {\n  color: var(--text-secondary);\n  width: min(600px, calc(100% - 32px));\n  margin: 0 auto;\n  border: 1px solid var(--border);\n  border-radius: var(--radius-md);\n  background-color: var(--surface);\n  box-shadow: var(--shadow-sm);\n  transition: box-shadow var(--transition-med), border-color var(--transition-med);\n}\n\n.take-note {\n  display: flex;\n  align-items: center;\n  padding: 0 4px 0 0;\n  cursor: text;\n}\n\n.take-note:hover {\n  box-shadow: var(--shadow-md);\n  border-color: var(--border);\n}\n\n.take-note > div:first-child {\n  flex: 1;\n}\n\n.take-note > div:first-child > input {\n  height: 48px;\n  width: 100%;\n  padding: 12px 16px;\n  background-color: transparent;\n  outline: none;\n  border: none;\n  font-size: 15px;\n  font-family: inherit;\n  color: var(--text-secondary);\n  cursor: text;\n}\n\n.take-note input::placeholder {\n  color: var(--text-muted);\n}\n\n.take-note > div:not(:first-child) {\n  flex: 0 0 46px;\n  height: 46px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  border-radius: 50%;\n  cursor: pointer;\n  transition: background-color var(--transition-fast);\n}\n\n.take-note > div:not(:first-child):hover {\n  background-color: var(--hover-overlay);\n}\n\n.take-note > div:not(:first-child):hover svg path {\n  fill: var(--text-primary);\n}\n\n/* ────────────────────────────────────────────\n   Expanded note card\n──────────────────────────────────────────── */\n\n.take-note--active {\n  flex-direction: column;\n  animation: noteExpand 0.2s cubic-bezier(0.4, 0, 0.2, 1);\n  box-shadow: var(--shadow-lg);\n  border-color: var(--border);\n}\n\n@keyframes noteExpand {\n  from { transform: scaleY(0.95); opacity: 0.7; }\n  to   { transform: scaleY(1); opacity: 1; }\n}\n\n/* Top row: title + pin */\n.take-note--active .top,\n.take-note--active .middle,\n.take-note--active .bottom {\n  display: flex;\n  width: 100%;\n}\n\nmain .top {\n  min-height: 52px;\n  position: relative;\n  align-items: flex-start;\n}\n\nmain .top > div:first-child {\n  flex: 1;\n  position: relative;\n  min-height: 52px;\n}\n\nmain .top > div:first-child > div {\n  width: 100%;\n  height: 100%;\n  min-height: 52px;\n  outline: none;\n  border: none;\n  padding: 14px 16px 6px;\n  font-size: 16px;\n  font-weight: 600;\n  font-family: inherit;\n  color: var(--text-primary);\n}\n\nmain .top > div:nth-child(2) {\n  flex: 0 0 48px;\n}\n\nmain .top > div:nth-child(2) > div {\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  width: 36px;\n  height: 36px;\n  margin: 8px auto 0;\n  border-radius: 50%;\n  cursor: pointer;\n  transition: background-color var(--transition-fast);\n}\n\nmain .top > div:nth-child(2) > div:hover {\n  background-color: var(--hover-overlay);\n}\n\nmain .top > div:nth-child(2) > div svg path {\n  fill: var(--text-secondary);\n  transition: fill var(--transition-fast);\n}\n\nmain .top > div:nth-child(2) > div:hover svg path {\n  fill: var(--text-primary);\n}\n\n/* Middle row: body text */\n.take-note--active .middle {\n  min-height: 60px;\n  position: relative;\n}\n\n.take-note--active .middle > div {\n  min-width: 100%;\n  min-height: 60px;\n  position: relative;\n}\n\n.take-note--active .middle > div > div {\n  font-size: 14px;\n  outline: none;\n  border: none;\n  padding: 8px 16px 12px;\n  color: var(--text-primary);\n  line-height: 1.6;\n}\n\n/* ────────────────────────────────────────────\n   Placeholder overlay\n──────────────────────────────────────────── */\n\n.placeholder {\n  position: absolute;\n  inset: 0;\n  pointer-events: none;\n  letter-spacing: 0.01785714em;\n  font-family: \"Google Sans\", Roboto, Arial, sans-serif;\n  font-size: 0.875rem;\n  font-weight: 500;\n  line-height: 1.25rem;\n  color: var(--text-muted);\n  padding: 14px 16px 6px;\n}\n\n/* Title placeholder offset */\nmain .top .placeholder {\n  padding: 14px 16px 6px;\n}\n\n/* Body placeholder offset */\n.take-note--active .middle .placeholder {\n  padding: 8px 16px 12px;\n  font-weight: 400;\n}\n\n.mainInput {\n  position: relative;\n  z-index: 1;\n  color: var(--text-primary);\n  font-size: 14px;\n  outline: none;\n  min-height: 24px;\n}\n\nmain .top .mainInput {\n  font-size: 16px;\n  font-weight: 600;\n}\n\n/* ────────────────────────────────────────────\n   Bottom toolbar\n──────────────────────────────────────────── */\n\nmain .bottom {\n  min-height: 44px;\n  border-top: 1px solid var(--border);\n}\n\nmain .bottom > div {\n  width: 100%;\n  height: 44px;\n  display: flex;\n  align-items: center;\n  padding: 4px 8px;\n}\n\nmain .bottom > div > div:first-child {\n  flex: 1;\n  display: flex;\n  align-items: center;\n  gap: 2px;\n}\n\nmain .bottom > div > div:first-child > div {\n  width: 34px;\n  height: 34px;\n  border-radius: 50%;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  cursor: pointer;\n  transition: background-color var(--transition-fast);\n  flex-shrink: 0;\n}\n\nmain .bottom > div > div:first-child > div:hover {\n  background-color: var(--hover-overlay);\n}\n\nmain .bottom > div > div:first-child > div:hover svg path {\n  fill: var(--text-primary);\n}\n\nmain .bottom > div > div:not(:first-child) {\n  flex: 0 0 auto;\n}\n\nmain .bottom svg {\n  width: 18px;\n  height: 18px;\n}\n\n/* ────────────────────────────────────────────\n   Saved notes grid\n──────────────────────────────────────────── */\n\n.notes-grid {\n  display: grid;\n  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));\n  gap: 16px;\n  padding: 16px;\n  animation: fadeIn 0.3s ease;\n}\n\n.note-card {\n  background-color: var(--surface);\n  border: 1px solid var(--border);\n  border-radius: var(--radius-md);\n  padding: 16px;\n  cursor: pointer;\n  position: relative;\n  transition: box-shadow var(--transition-med), border-color var(--transition-med), transform var(--transition-fast);\n  animation: noteIn 0.25s ease;\n}\n\n@keyframes noteIn {\n  from { opacity: 0; transform: translateY(10px) scale(0.98); }\n  to   { opacity: 1; transform: translateY(0) scale(1); }\n}\n\n.note-card:hover {\n  box-shadow: var(--shadow-md);\n  border-color: rgba(255, 255, 255, 0.2);\n  transform: translateY(-2px);\n}\n\n.note-card__title {\n  font-size: 16px;\n  font-weight: 600;\n  color: var(--text-primary);\n  margin-bottom: 6px;\n  word-break: break-word;\n}\n\n.note-card__body {\n  font-size: 14px;\n  color: var(--text-secondary);\n  line-height: 1.5;\n  word-break: break-word;\n  white-space: pre-wrap;\n  max-height: 200px;\n  overflow: hidden;\n}\n\n.note-card__actions {\n  display: flex;\n  align-items: center;\n  gap: 4px;\n  margin-top: 12px;\n  opacity: 0;\n  transition: opacity var(--transition-fast);\n}\n\n.note-card:hover .note-card__actions {\n  opacity: 1;\n}\n\n.note-card__action-btn {\n  width: 32px;\n  height: 32px;\n  border: none;\n  background: transparent;\n  border-radius: 50%;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  cursor: pointer;\n  transition: background-color var(--transition-fast);\n}\n\n.note-card__action-btn:hover {\n  background-color: var(--hover-overlay);\n}\n\n.note-card__action-btn svg {\n  width: 18px;\n  height: 18px;\n}\n\n.note-card__action-btn svg path {\n  fill: var(--text-secondary);\n}\n\n.note-card__action-btn:hover svg path {\n  fill: var(--text-primary);\n}\n\n.note-card.pinned {\n  border-color: rgba(251, 188, 4, 0.3);\n}\n\n.pinned-badge {\n  position: absolute;\n  top: 10px;\n  right: 10px;\n}\n\n.pinned-badge svg {\n  width: 16px;\n  height: 16px;\n}\n\n.pinned-badge svg path {\n  fill: var(--accent);\n}\n\n/* Section label above grids */\n.notes-section-label {\n  padding: 4px 16px 2px;\n  font-size: 11px;\n  font-weight: 600;\n  letter-spacing: 0.1em;\n  text-transform: uppercase;\n  color: var(--text-muted);\n}\n\n/* ────────────────────────────────────────────\n   Responsive\n──────────────────────────────────────────── */\n\n@media (max-width: 680px) {\n  .take-note,\n  .take-note--active {\n    width: calc(100% - 16px);\n  }\n\n  .notes-grid {\n    grid-template-columns: 1fr;\n    padding: 8px;\n  }\n}\n\n@media (max-width: 530px) {\n  main .bottom > div {\n    flex-wrap: wrap;\n    height: auto;\n    padding: 6px 8px;\n    gap: 4px;\n  }\n\n  main .bottom > div > div:not(:first-child) {\n    margin-left: auto;\n  }\n}\n\n/* ────────────────────────────────────────────\n   Color Picker\n──────────────────────────────────────────── */\n\n.color-picker-popover {\n  position: absolute;\n  bottom: 100%;\n  left: 0;\n  z-index: 100;\n  background-color: var(--surface-overlay);\n  border: 1px solid var(--border);\n  border-radius: var(--radius-md);\n  box-shadow: var(--shadow-lg);\n  padding: 8px;\n  width: 140px;\n  display: flex;\n  flex-wrap: wrap;\n  gap: 8px;\n  margin-bottom: 8px;\n}\n\n.color-swatch {\n  width: 28px;\n  height: 28px;\n  border-radius: 50%;\n  cursor: pointer;\n  border: 2px solid transparent;\n  transition: transform var(--transition-fast);\n}\n\n.color-swatch:hover {\n  transform: scale(1.1);\n}\n\n.color-swatch.selected {\n  border-color: var(--accent);\n}\n\n.color-swatch.default {\n  border: 2px solid var(--border);\n}\n"],"sourceRoot":""}]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 

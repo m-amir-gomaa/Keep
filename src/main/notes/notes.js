@@ -11,11 +11,181 @@ import {
   saveNote,
   deleteNote,
   togglePin,
-  archiveNote
+  archiveNote,
+  updateNote
 } from "./notes-store";
 
 let activeNoteContainer;
 let toggleSide;
+let searchQuery = '';
+let activeLabelFilter = '';
+let _renderFn = null; // set by loadNotes once the grid exists
+
+const COLORS = [
+  { name: 'Default', value: '' },
+  { name: 'Red', value: '#5c2b29' },
+  { name: 'Orange', value: '#614a19' },
+  { name: 'Yellow', value: '#635d19' },
+  { name: 'Green', value: '#345920' },
+  { name: 'Teal', value: '#16504b' },
+  { name: 'Blue', value: '#2d555e' },
+  { name: 'Dark blue', value: '#1e3a5f' },
+  { name: 'Purple', value: '#42275e' },
+  { name: 'Pink', value: '#5b2245' },
+  { name: 'Brown', value: '#442f19' },
+  { name: 'Gray', value: '#3c3f43' }
+];
+
+function createColorPicker(currentColor, onColorSelect) {
+  const container = document.createElement("div");
+  container.classList.add("color-picker-container");
+  container.style.position = "relative";
+  
+  const btn = createSVGIcon_Container(SVG.bgOptions);
+  makeHoverable(btn, "Background options");
+  makeFocusable(btn);
+  
+  const popover = document.createElement("div");
+  popover.classList.add("color-picker-popover");
+  popover.style.display = "none";
+  
+  COLORS.forEach(c => {
+    const swatch = document.createElement("div");
+    swatch.classList.add("color-swatch");
+    if (c.value === "") {
+      swatch.classList.add("default");
+    } else {
+      swatch.style.backgroundColor = c.value;
+    }
+    if (currentColor === c.value) swatch.classList.add("selected");
+    swatch.title = c.name;
+    
+    swatch.addEventListener("click", (e) => {
+      e.stopPropagation();
+      onColorSelect(c.value);
+      popover.style.display = "none";
+      Array.from(popover.children).forEach(child => child.classList.remove("selected"));
+      swatch.classList.add("selected");
+    });
+    
+    popover.appendChild(swatch);
+  });
+  
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    popover.style.display = popover.style.display === "none" ? "flex" : "none";
+  });
+  
+  document.addEventListener("click", (e) => {
+    if (!container.contains(e.target)) popover.style.display = "none";
+  });
+  
+  container.append(btn, popover);
+  return container;
+}
+
+function createLabelPicker(currentLabels, onLabelsChange) {
+  const container = document.createElement("div");
+  container.classList.add("label-picker-container");
+  container.style.position = "relative";
+  
+  const labelSVG = `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" fill="currentColor"><path d="M840-480 666-234q-11 16-28.5 25t-37.5 9H200q-33 0-56.5-23.5T120-280v-400q0-33 23.5-56.5T200-760h400q20 0 37.5 9t28.5 25l174 246Zm-98 0L600-680H200v400h400l142-200Zm-542 0v200-400 200Z"/></svg>`;
+  
+  const btn = createSVGIcon_Container(SVG.more || SVG.image); // fallback
+  btn.innerHTML = labelSVG;
+  btn.classList.add("special__button");
+  makeHoverable(btn, "Add labels");
+  makeFocusable(btn);
+  
+  const popover = document.createElement("div");
+  popover.classList.add("label-picker-popover");
+  popover.style.display = "none";
+  popover.style.position = "absolute";
+  popover.style.bottom = "100%";
+  popover.style.left = "0";
+  popover.style.backgroundColor = "var(--surface-overlay)";
+  popover.style.border = "1px solid var(--border)";
+  popover.style.padding = "8px";
+  popover.style.borderRadius = "4px";
+  popover.style.zIndex = "100";
+  popover.style.maxHeight = "200px";
+  popover.style.overflowY = "auto";
+  popover.style.width = "180px";
+  
+  const title = document.createElement("div");
+  title.textContent = "Label note";
+  title.style.fontSize = "14px";
+  title.style.marginBottom = "8px";
+  title.style.fontWeight = "bold";
+  popover.appendChild(title);
+  
+  function renderLabels() {
+    while (popover.children.length > 1) {
+      popover.removeChild(popover.lastChild);
+    }
+    const allLabels = JSON.parse(localStorage.getItem("labels")) || [];
+    
+    allLabels.forEach(lbl => {
+      const row = document.createElement("div");
+      row.style.display = "flex";
+      row.style.alignItems = "center";
+      row.style.gap = "8px";
+      row.style.padding = "4px 0";
+      row.style.cursor = "pointer";
+      
+      const cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.checked = currentLabels.includes(lbl);
+      cb.style.cursor = "pointer";
+      
+      const span = document.createElement("span");
+      span.textContent = lbl;
+      span.style.fontSize = "13px";
+      
+      row.appendChild(cb);
+      row.appendChild(span);
+      
+      row.addEventListener("click", (e) => {
+        e.stopPropagation();
+        cb.checked = !cb.checked;
+        if (cb.checked) {
+          if (!currentLabels.includes(lbl)) currentLabels.push(lbl);
+        } else {
+          currentLabels = currentLabels.filter(l => l !== lbl);
+        }
+        onLabelsChange([...currentLabels]);
+      });
+      cb.addEventListener("click", (e) => e.stopPropagation());
+      cb.addEventListener("change", (e) => {
+        if (e.target.checked) {
+          if (!currentLabels.includes(lbl)) currentLabels.push(lbl);
+        } else {
+          currentLabels = currentLabels.filter(l => l !== lbl);
+        }
+        onLabelsChange([...currentLabels]);
+      });
+      
+      popover.appendChild(row);
+    });
+  }
+  
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (popover.style.display === "none") {
+      renderLabels();
+      popover.style.display = "block";
+    } else {
+      popover.style.display = "none";
+    }
+  });
+  
+  document.addEventListener("click", (e) => {
+    if (!container.contains(e.target)) popover.style.display = "none";
+  });
+  
+  container.append(btn, popover);
+  return container;
+}
 
 const SVG = {
   pin: `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="m640-480 80 80v80H520v240l-40 40-40-40v-240H240v-80l80-80v-280h-40v-80h400v80h-40v280Zm-286 80h252l-46-46v-314H400v314l-46 46Zm126 0Z"/></svg>`,
@@ -77,6 +247,10 @@ export function loadNotes() {
       noteContainer.removeChild(noteImageIconContainer);
       noteContainer.classList.remove("take-note");
       noteContainer.classList.add("take-note--active");
+      
+      let noteColor = "";
+      let noteLabels = [];
+      noteContainer.style.backgroundColor = "";
 
       /* ─── TOP: title + pin ─── */
       const top = document.createElement("div");
@@ -128,7 +302,6 @@ export function loadNotes() {
       const toolbarButtons = [
         { svg: SVG.remindMe,     tip: "Remind me" },
         { svg: SVG.collaborator, tip: "Collaborator" },
-        { svg: SVG.bgOptions,    tip: "Background options" },
         { svg: SVG.addImage,     tip: "Add image" },
         { svg: SVG.archive,      tip: "Archive" },
         { svg: SVG.more,         tip: "More" },
@@ -142,6 +315,18 @@ export function loadNotes() {
         makeFocusable(btn);
         iconsContainer.appendChild(btn);
       });
+      
+      const colorPicker = createColorPicker(noteColor, (c) => {
+        noteColor = c;
+        noteContainer.style.backgroundColor = c;
+      });
+      
+      const labelPicker = createLabelPicker(noteLabels, (lbls) => {
+        noteLabels = lbls;
+      });
+      
+      iconsContainer.insertBefore(colorPicker, iconsContainer.children[2]);
+      iconsContainer.insertBefore(labelPicker, iconsContainer.children[3]);
 
       const closeBtn = document.createElement("button");
       closeBtn.classList.add("special__button");
@@ -153,7 +338,7 @@ export function loadNotes() {
         const body  = (bodyWrapper.querySelector(".mainInput")  || bodyWrapper.lastChild).textContent.trim();
 
         if (title || body) {
-          saveNote({ title, body, pinned: isPinned, archived: false });
+          saveNote({ title, body, pinned: isPinned, archived: false, color: noteColor, labels: noteLabels });
           renderNoteCards(notesGrid);
         }
 
@@ -221,7 +406,23 @@ export function loadNotes() {
 
   function renderNoteCards(container) {
     container.innerHTML = "";
-    const notes = getNotes();
+    let notes = getNotes();
+    
+    // Apply label filter
+    if (activeLabelFilter) {
+      notes = notes.filter(n => (n.labels || []).includes(activeLabelFilter));
+    }
+    
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      notes = notes.filter(n =>
+        (n.title || '').toLowerCase().includes(q) ||
+        (n.body || '').toLowerCase().includes(q) ||
+        (n.labels || []).some(l => l.toLowerCase().includes(q))
+      );
+    }
+    
     const pinned = notes.filter(n => n.pinned);
     const others = notes.filter(n => !n.pinned);
 
@@ -245,12 +446,31 @@ export function loadNotes() {
     } else {
       renderGroup([...pinned, ...others], "");
     }
+    
+    // Empty state
+    if (!notes.length) {
+      const empty = document.createElement("div");
+      empty.style.cssText = "grid-column: 1/-1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 0; opacity: 0.6; text-align: center;";
+      const msg = searchQuery.trim() || activeLabelFilter
+        ? `No notes match "${searchQuery || activeLabelFilter}"`
+        : "Notes you add appear here";
+      empty.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" height="80" viewBox="0 -960 960 960" width="80" style="margin-bottom:12px;opacity:0.5"><path fill="currentColor" d="M320-240h320v-80H320v80Zm0-160h320v-80H320v80ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H240Zm280-520v-200H240v640h480v-440H520ZM240-800v200-200 640-640Z"/></svg><p style="font-size:16px">${msg}</p>`;
+      container.appendChild(empty);
+    }
   }
 
   function buildNoteCard(note, container) {
     const card = document.createElement("div");
     card.classList.add("note-card");
     if (note.pinned) card.classList.add("pinned");
+    if (note.color) card.style.backgroundColor = note.color;
+
+    card.addEventListener("click", (e) => {
+      if (e.target.closest('.note-card__actions') || e.target.closest('.pinned-badge')) {
+        return;
+      }
+      openEditModal(note, container);
+    });
 
     if (note.title) {
       const title = document.createElement("div");
@@ -264,6 +484,27 @@ export function loadNotes() {
       body.classList.add("note-card__body");
       body.textContent = note.body;
       card.appendChild(body);
+    }
+    
+    if (note.labels && note.labels.length > 0) {
+      const labelsContainer = document.createElement("div");
+      labelsContainer.style.display = "flex";
+      labelsContainer.style.flexWrap = "wrap";
+      labelsContainer.style.gap = "4px";
+      labelsContainer.style.marginTop = "8px";
+      
+      note.labels.forEach(lbl => {
+        const chip = document.createElement("span");
+        chip.textContent = lbl;
+        chip.style.fontSize = "11px";
+        chip.style.backgroundColor = "rgba(0,0,0,0.1)";
+        chip.style.padding = "2px 8px";
+        chip.style.borderRadius = "10px";
+        chip.style.border = "1px solid var(--border)";
+        labelsContainer.appendChild(chip);
+      });
+      
+      card.appendChild(labelsContainer);
     }
 
     if (note.pinned) {
@@ -310,17 +551,150 @@ export function loadNotes() {
       renderNoteCards(container);
     });
 
-    actions.append(pinBtn, archiveBtn, deleteBtn);
+    const colorPicker = createColorPicker(note.color || "", (c) => {
+      updateNote(note.id, { color: c });
+      renderNoteCards(container);
+    });
+
+    const labelPicker = createLabelPicker(note.labels || [], (lbls) => {
+      updateNote(note.id, { labels: lbls });
+      renderNoteCards(container);
+    });
+
+    actions.append(pinBtn, colorPicker, labelPicker, archiveBtn, deleteBtn);
     card.appendChild(actions);
 
     return card;
   }
 
+  /* ── Edit Modal ── */
+  function openEditModal(note, container) {
+    const overlay = document.createElement("div");
+    overlay.classList.add("modal-overlay");
+    overlay.style.position = "fixed";
+    overlay.style.top = "0";
+    overlay.style.left = "0";
+    overlay.style.width = "100%";
+    overlay.style.height = "100%";
+    overlay.style.backgroundColor = "rgba(0,0,0,0.6)";
+    overlay.style.zIndex = "1000";
+    overlay.style.display = "flex";
+    overlay.style.alignItems = "center";
+    overlay.style.justifyContent = "center";
+
+    const modal = document.createElement("div");
+    modal.classList.add("take-note--active");
+    modal.style.width = "min(600px, 90%)";
+    modal.style.maxHeight = "90vh";
+    modal.style.overflowY = "visible";
+    modal.style.position = "relative";
+    modal.style.cursor = "default";
+    
+    let editColor = note.color || "";
+    let editLabels = [...(note.labels || [])];
+    if (editColor) modal.style.backgroundColor = editColor;
+    
+    // Disable global outside click when modal is open
+    modal.addEventListener("click", (e) => e.stopPropagation());
+
+    const top = document.createElement("div");
+    top.classList.add("top");
+    
+    const titleWrapper = createEditableDiv("Title", top);
+    const titleInput = titleWrapper.querySelector(".mainInput") || titleWrapper.lastChild;
+    titleInput.textContent = note.title;
+    if (note.title) titleWrapper.firstChild.style.display = "none";
+
+    const pinIcon = createSVGIcon(SVG.pin);
+    const pinIconFilled = createSVGIcon(SVG.pinFilled);
+    let isPinned = note.pinned;
+    const pinBtn = document.createElement("div");
+    pinBtn.appendChild(isPinned ? pinIconFilled : pinIcon);
+    makeHoverable(pinBtn, isPinned ? "Unpin note" : "Pin note");
+    pinBtn.addEventListener("click", () => {
+      isPinned = !isPinned;
+      toggleIcon(pinBtn, isPinned ? pinIcon : pinIconFilled, isPinned ? pinIconFilled : pinIcon);
+      makeHoverable(pinBtn, isPinned ? "Unpin note" : "Pin note");
+    });
+    const IconDiv = document.createElement("div");
+    IconDiv.appendChild(pinBtn);
+    top.append(titleWrapper, IconDiv);
+
+    const middle = document.createElement("div");
+    middle.classList.add("middle");
+    const bodyWrapper = createEditableDiv("Take a note…", middle, true);
+    const bodyInput = bodyWrapper.querySelector(".mainInput") || bodyWrapper.lastChild;
+    bodyInput.textContent = note.body;
+    if (note.body) bodyWrapper.firstChild.style.display = "none";
+    middle.appendChild(bodyWrapper);
+
+    const bottom = document.createElement("div");
+    bottom.classList.add("bottom");
+    const actionsContainer = document.createElement("div");
+    
+    const iconsContainer = document.createElement("div");
+    iconsContainer.style.display = "flex";
+    iconsContainer.style.alignItems = "center";
+    const colorPicker = createColorPicker(editColor, (c) => {
+      editColor = c;
+      modal.style.backgroundColor = c;
+    });
+    const labelPicker = createLabelPicker(editLabels, (lbls) => {
+      editLabels = lbls;
+    });
+    iconsContainer.appendChild(colorPicker);
+    iconsContainer.appendChild(labelPicker);
+
+    const closeBtnContainer = document.createElement("div");
+    const closeBtn = document.createElement("button");
+    closeBtn.classList.add("special__button");
+    closeBtn.textContent = "Close";
+    closeBtnContainer.appendChild(closeBtn);
+    
+    function saveAndClose() {
+      const updatedTitle = titleInput.textContent.trim();
+      const updatedBody = bodyInput.textContent.trim();
+      updateNote(note.id, { title: updatedTitle, body: updatedBody, pinned: isPinned, color: editColor, labels: editLabels });
+      renderNoteCards(container);
+      document.body.removeChild(overlay);
+    }
+
+    closeBtn.addEventListener("click", saveAndClose);
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) saveAndClose();
+    });
+
+    actionsContainer.append(iconsContainer, closeBtnContainer);
+    bottom.appendChild(actionsContainer);
+    
+    modal.append(top, middle, bottom);
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+  }
+
   /* ── Bootstrap ── */
   function createNotes() {
     loadTakeNoteDiv();
+    
+    // Search bar
+    const searchBar = document.createElement("div");
+    searchBar.style.cssText = "max-width:600px;margin:0 auto 24px;display:flex;align-items:center;background:var(--surface-main,#1e2028);border:1px solid var(--border,rgba(255,255,255,0.1));border-radius:12px;padding:0 12px;gap:8px;";
+    const searchIcon = document.createElement("span");
+    searchIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" height="18" viewBox="0 -960 960 960" width="18" fill="currentColor" style="opacity:0.5"><path d="M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z"/></svg>`;
+    const searchInput = document.createElement("input");
+    searchInput.type = "text";
+    searchInput.placeholder = "Search notes, labels...";
+    searchInput.style.cssText = "flex:1;background:transparent;border:none;outline:none;color:inherit;font-size:14px;padding:10px 0;";
+    searchInput.addEventListener("input", (e) => {
+      searchQuery = e.target.value;
+      renderNoteCards(notesGrid);
+    });
+    searchBar.append(searchIcon, searchInput);
+    
     renderNoteCards(notesGrid);
-    main.append(noteDiv, notesGrid);
+    main.append(noteDiv, searchBar, notesGrid);
+    // expose render function to module scope
+    _renderFn = () => renderNoteCards(notesGrid);
     return main;
   }
 
@@ -330,3 +704,13 @@ export function loadNotes() {
 }
 
 export { activeNoteContainer, toggleSide };
+
+/** Allow sidebar or other modules to set a label filter. */
+export function setLabelFilter(label) {
+  activeLabelFilter = label;
+  if (_renderFn) _renderFn();
+}
+
+/** Register the notes grid so sidebar can trigger re-renders */
+export let notesGridElement = null;
+export function setNotesGridElement(el) { notesGridElement = el; }

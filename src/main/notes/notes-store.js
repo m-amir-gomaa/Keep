@@ -26,40 +26,104 @@ function uid() {
 }
 
 function getInitialNotes() {
+  const t = Date.now();
   return [
     {
       id: uid(),
-      title: "Clean Architecture",
-      body: "Dependency rules are about controlling the flow of control and data. Dependencies must point inward toward the domain model.",
+      title: "Portfolio checklist",
+      body: "✅ Keep clone (Vanilla + Next.js)\n✅ Deploy to Vercel\n☐ Add more projects\n☐ Write a solid README for each repo\n☐ Update LinkedIn headline",
+      pinned: true,
+      archived: false,
+      deleted: false,
+      color: "#fff9c4",
+      labels: ["Work", "Urgent"],
+      createdAt: t - 60000,
+      updatedAt: t - 60000,
+    },
+    {
+      id: uid(),
+      title: "Clean Architecture notes",
+      body: "Dependency rules are about controlling the flow of control and data. Dependencies must point inward toward the domain model. High-level policy must never depend on low-level detail.",
       pinned: true,
       archived: false,
       deleted: false,
       color: "",
-      createdAt: Date.now() - 100000,
-      updatedAt: Date.now() - 100000
+      labels: ["Dev", "Reading List"],
+      createdAt: t - 200000,
+      updatedAt: t - 200000,
     },
     {
       id: uid(),
-      title: "The Pragmatic Programmer",
-      body: "It's not just what you write, it's how you manage state over time. Don't live with broken windows.",
+      title: "Deep Work — key idea",
+      body: "Professional activities performed in a state of distraction-free concentration that push your cognitive capabilities to their limit create new value, improve your skill, and are hard to replicate.",
+      pinned: false,
+      archived: false,
+      deleted: false,
+      color: "#b2dfdb",
+      labels: ["Reading List", "Personal"],
+      createdAt: t - 400000,
+      updatedAt: t - 400000,
+    },
+    {
+      id: uid(),
+      title: "Side project ideas",
+      body: "• AI cover letter generator\n• Real-time code collaboration tool\n• Browser extension for reading time estimates\n• CLI tool for managing dotfiles",
       pinned: false,
       archived: false,
       deleted: false,
       color: "",
-      createdAt: Date.now() - 200000,
-      updatedAt: Date.now() - 200000
+      labels: ["Ideas", "Dev"],
+      createdAt: t - 700000,
+      updatedAt: t - 700000,
     },
     {
       id: uid(),
-      title: "Deep Work",
-      body: "Professional activities performed in a state of distraction-free concentration that push your cognitive capabilities to their limit.",
+      title: "Design system tokens",
+      body: "Primary: #00f2fe\nSurface: #0d101b\nText: #e8eaf6\nBorder: rgba(255,255,255,0.07)\nRadius: 12px\nFont: Outfit, Inter",
+      pinned: false,
+      archived: false,
+      deleted: false,
+      color: "#e8d5f5",
+      labels: ["Design", "Dev"],
+      createdAt: t - 900000,
+      updatedAt: t - 900000,
+    },
+    {
+      id: uid(),
+      title: "Monthly budget",
+      body: "Rent: 4000\nGroceries: ~1200\nSubscriptions: 350\nSavings target: 2000\nMisc: 800",
+      pinned: false,
+      archived: false,
+      deleted: false,
+      color: "#c8e6c9",
+      labels: ["Finance", "Personal"],
+      createdAt: t - 1200000,
+      updatedAt: t - 1200000,
+    },
+    {
+      id: uid(),
+      title: "Meeting agenda — Monday",
+      body: "1. Sprint review & retrospective\n2. Q4 roadmap alignment\n3. Discuss API rate limiting strategy\n4. Team async standup process",
       pinned: false,
       archived: false,
       deleted: false,
       color: "",
-      createdAt: Date.now() - 300000,
-      updatedAt: Date.now() - 300000
-    }
+      labels: ["Work"],
+      createdAt: t - 1500000,
+      updatedAt: t - 1500000,
+    },
+    {
+      id: uid(),
+      title: "CSS Grid cheatsheet",
+      body: "grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));\ngap: 1rem;\nalign-items: start;\n\nParent sets the grid, children fill it. Use subgrid for nested alignment.",
+      pinned: false,
+      archived: false,
+      deleted: false,
+      color: "#bbdefb",
+      labels: ["Dev", "Design"],
+      createdAt: t - 2000000,
+      updatedAt: t - 2000000,
+    },
   ];
 }
 
@@ -118,9 +182,9 @@ export function getDeletedNotes() {
 
 /**
  * Create a new note and persist it.
- * @param {{ title?: string, body?: string, pinned?: boolean, color?: string }} partial
+ * @param {{ title?: string, body?: string, pinned?: boolean, color?: string, labels?: string[] }} partial
  */
-export function saveNote({ title = "", body = "", pinned = false, color = "" } = {}) {
+export function saveNote({ title = "", body = "", pinned = false, color = "", labels = [] } = {}) {
   if (!title.trim() && !body.trim()) return null; // skip empty
 
   const note = {
@@ -131,6 +195,7 @@ export function saveNote({ title = "", body = "", pinned = false, color = "" } =
     archived: false,
     deleted: false,
     color,
+    labels,
     createdAt: Date.now(),
     updatedAt: Date.now()
   };
